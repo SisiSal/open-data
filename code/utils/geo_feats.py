@@ -28,6 +28,35 @@ def calculate_distance_coordinates(x1, y1, x2=104.0, y2=34.0):
 
     return distance
 
+def change_dims(old_value, old_min, old_max, new_min, new_max):
+    '''
+    Function for changing the coordinates to our pitch dimensions.
+
+    Arguments:
+        old_value, old_min, old_max, new_min, new_max -- float values.
+
+    Returns:
+        new_value -- float value(the coordinate value either x or y).
+    '''
+    ## calculate the value
+    new_value = ( (old_value - old_min) / (old_max - old_min) ) * (new_max - new_min) + new_min
+
+    return new_value
+
+def coordinates_x(value):
+    '''
+    Return x coordinate
+    '''
+    value_x = change_dims(value[0], 0, 120, 0, 104)
+    return value_x
+
+def coordinates_y(value):
+    '''
+    Return 80 - x coordinate
+    '''
+    value_y = change_dims(80- value[1], 0, 80, 0, 68)
+    return value_y
+
 #area of triangle from shot and the two goal posts
 def area(x1, y1, x2, y2, x3, y3): 
     """
@@ -114,12 +143,12 @@ def freeze_frame_vars(freeze_frame, shot_location_x, shot_location_y):
                 count_opponent += 1
         else:
             ## compute goalkeeper covering angle
-            goal_keeper_angle = post_angle(x_coord, y_coord)
+            goal_keeper_angle = calculate_post_angle(x_coord, y_coord)
 
             ## compute distance between goalkeeper and goal
-            dis_goal_keeper = distance_bw_coordinates(x_coord, y_coord)
+            dis_goal_keeper = calculate_distance_coordinates(x_coord, y_coord)
 
             ## compute distance between goalkeeper and shot-location
-            dis_shot_keeper = distance_bw_coordinates(x_coord, y_coord, shot_location_x, shot_location_y)
+            dis_shot_keeper = calculate_distance_coordinates(x_coord, y_coord, shot_location_x, shot_location_y)
     
     return count_teammate, count_opponent, goal_keeper_angle, dis_goal_keeper, dis_shot_keeper
