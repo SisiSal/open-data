@@ -1,7 +1,7 @@
 import ast
 import pandas as pd
 import numpy as np
-from Code.utils.contextual_feats import calculate_score_per_match, calculate_player_on_pitch
+from Code.utils.contextual_feats import calculate_score_per_match, calculate_player_on_pitch, freeze_frame_vars, coordinates_x, coordinates_y
 from Code.utils.geo_feats import calculate_distance_coordinates, calculate_post_angle
 from Code.utils.data_cleaning import add_pass_type, filter_rows, remove_empty_cols, remove_invalid_time, drop_predef_cols, fill_predef_cols
 
@@ -61,3 +61,30 @@ print('Finished.')
 #df = remove_empty_cols(df)
 
 df.to_csv('processed_events.csv', index=False)
+
+
+
+def compute_player_in_between(row):
+    freeze = row["shot_freeze_frame"]
+    x = coordinates_x(row["location"])
+    y = coordinates_y(row["location"])
+
+    count_teammate, count_opponent, _, _, _ = freeze_frame_vars(freeze, x, y)
+    return count_teammate + count_opponent
+
+
+def compute_goalkeeper_angle(row):
+    freeze = row["shot_freeze_frame"]
+    x = coordinates_x(row["location"])
+    y = coordinates_y(row["location"])
+
+    _, _, gk_angle, _, _ = freeze_frame_vars(freeze, x, y)
+    return gk_angle
+
+print("Adding player_in_between...")
+df["player_in_between"] = df.apply(compute_player_in_between, axis=1)
+print('Finished.')
+
+print("Adding goal_keeper_angle...")
+df["goal_keeper_angle"] = df.apply(compute_goalkeeper_angle, axis=1)
+print('Finished.')
