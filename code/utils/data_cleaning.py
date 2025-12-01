@@ -54,8 +54,10 @@ def add_pass_type(df):
 
         df.at[idx, "pass_type"] = pass_type
 
+
 path = "data/events"
 all_events = []
+
 def filter_rows():
     for filename in os.listdir(path):
         if filename.endswith(".json"):
