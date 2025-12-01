@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 from Code.utils.contextual_feats import calculate_score_per_match, calculate_player_on_pitch
 from Code.utils.geo_feats import calculate_distance_coordinates, calculate_post_angle
-from Code.utils.data_cleaning import filter_rows, remove_empty_cols, remove_invalid_time, drop_predef_cols, fill_predef_cols
+from Code.utils.data_cleaning import add_pass_type, filter_rows, remove_empty_cols, remove_invalid_time, drop_predef_cols, fill_predef_cols
 
 print('Starting filtering files...')
 df = filter_rows()
