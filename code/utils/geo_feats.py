@@ -1,11 +1,48 @@
 import math
 import numpy as np
 
-def calculate_post_angle(x, y, g1_x=104, g1_y=30.34, g2_x=104, g2_y=37.66):
-    if x == 104 and (30.34 <= y <= 37.66):
+def change_dims(old_value, old_min, old_max, new_min, new_max):
+    '''
+    Function for changing the coordinates to our pitch dimensions.
+
+    Arguments:
+        old_value, old_min, old_max, new_min, new_max -- float values.
+
+    Returns:
+        new_value -- float value(the coordinate value either x or y).
+    '''
+    ## calculate the value
+    new_value = ( (old_value - old_min) / (old_max - old_min) ) * (new_max - new_min) + new_min
+
+    return new_value
+
+def coordinates_x(value):
+    '''
+    Return x coordinate
+    '''
+    value_x = change_dims(value[0], 0, 120, 0, 105)
+    return value_x
+
+def coordinates_y(value):
+    '''
+    Return 80 - x coordinate
+    '''
+    value_y = change_dims(80- value[1], 0, 80, 0, 68)
+    return value_y
+
+#Second distance by default is opponent's goal
+def calculate_distance_coordinates(x1, y1, x2=105.0, y2=34.0):
+    diff_sqr_x = (x2 - x1)**2
+    diff_sqr_y = (y2 - y1)**2
+    distance = math.sqrt(diff_sqr_x + diff_sqr_y)
+
+    return distance
+
+def calculate_post_angle(x, y, g1_x=105, g1_y=30.34, g2_x=105, g2_y=37.66):
+    if x == 105 and (30.34 <= y <= 37.66):
         return 180
 
-    if x == 104 and (y > 37.66 or y < 30.34):
+    if x == 105 and (y > 37.66 or y < 30.34):
         return 0
 
     ## calculating the three sides of the triangle.
@@ -20,14 +57,6 @@ def calculate_post_angle(x, y, g1_x=104, g1_y=30.34, g2_x=104, g2_y=37.66):
 
     return angle
 
-#Second distance by default is opponent's goal
-def calculate_distance_coordinates(x1, y1, x2=104.0, y2=34.0):
-    diff_sqr_x = (x2 - x1)**2
-    diff_sqr_y = (y2 - y1)**2
-    distance = math.sqrt(diff_sqr_x + diff_sqr_y)
-
-    return distance
-
 def area(x1, y1, x2, y2, x3, y3): 
     """
     Funtion to calculate area of triangle.
@@ -41,7 +70,7 @@ def area(x1, y1, x2, y2, x3, y3):
     return abs((x1 * (y2 - y3) + x2 * (y3 - y1)  
                 + x3 * (y1 - y2)) / 2.0) 
 
-def is_inside(player_coord_x, player_coord_y, shot_location_x, shot_location_y, pole_1_x=104.0, pole_1_y=30.34, pole_2_x=104.0, pole_2_y=37.66):
+def is_inside(player_coord_x, player_coord_y, shot_location_x, shot_location_y, pole_1_x=105.0, pole_1_y=30.34, pole_2_x=105.0, pole_2_y=37.66):
     """
     Function to return whether player is between the player taking shot and goal.
 
@@ -50,9 +79,9 @@ def is_inside(player_coord_x, player_coord_y, shot_location_x, shot_location_y, 
         player_coord_y (float): player-coordinate-y.
         shot_location_x (float): shot-coordinate-x.
         shot_location_y (float): shot-coordinate-y.
-        pole_1_x (float, optional): goal-post(1) coordinate x. Defaults to 104.0.
+        pole_1_x (float, optional): goal-post(1) coordinate x. Defaults to 105.0.
         pole_1_y (float, optional): goal-post(1) coordinate y. Defaults to 30.34.
-        pole_2_x (float, optional): goal-post(2) coordinate x. Defaults to 104.0.
+        pole_2_x (float, optional): goal-post(2) coordinate x. Defaults to 105.0.
         pole_2_y (float, optional): goal-post(2) coordinate x. Defaults to 37.66.
     
     Returns:
@@ -77,35 +106,6 @@ def is_inside(player_coord_x, player_coord_y, shot_location_x, shot_location_y, 
     else: 
         return False
     
-def change_dims(old_value, old_min, old_max, new_min, new_max):
-    '''
-    Function for changing the coordinates to our pitch dimensions.
-
-    Arguments:
-        old_value, old_min, old_max, new_min, new_max -- float values.
-
-    Returns:
-        new_value -- float value(the coordinate value either x or y).
-    '''
-    ## calculate the value
-    new_value = ( (old_value - old_min) / (old_max - old_min) ) * (new_max - new_min) + new_min
-
-    return new_value
-
-def coordinates_x(value):
-    '''
-    Return x coordinate
-    '''
-    value_x = change_dims(value[0], 0, 120, 0, 104)
-    return value_x
-
-def coordinates_y(value):
-    '''
-    Return 80 - x coordinate
-    '''
-    value_y = change_dims(80- value[1], 0, 80, 0, 68)
-    return value_y
-
 
 def freeze_frame_vars(freeze_frame, shot_location_x, shot_location_y):
     """

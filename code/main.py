@@ -19,6 +19,11 @@ df = drop_predef_cols(df)
 df = fill_predef_cols(df)
 print('Finished.')
 
+## add x and y coordinate columns
+df['x'] = df['location'].apply(coordinates_x)
+df['y'] = df['location'].apply(coordinates_y)
+
+
 print('Extracting position X and Y from location column...')
 def safe_str_to_list(value):
     """
@@ -61,7 +66,6 @@ print('Finished.')
 #df = remove_empty_cols(df)
 
 df.to_csv('processed_events.csv', index=False)
-
 
 
 def compute_player_in_between(row):
