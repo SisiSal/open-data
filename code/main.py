@@ -17,13 +17,7 @@ df = dc.filter_rows()
 print('Finished.')
 
 print('Calculating time on pitch...')
-df = cf.calculate_player_on_pitch(df)
-print('Finished.')
-
-print('Cleaning rows and cols...')
-df = dc.remove_invalid_time(df)
-df = dc.drop_predef_cols(df)
-df = dc.fill_predef_cols(df)
+#df = cf.calculate_player_on_pitch(df)
 print('Finished.')
 
 #drop all columns with only empty values to replace this next function
@@ -48,12 +42,17 @@ df['angle_to_post'] = vector_cal_post_angle(df['loc_x'], df['loc_y'])
 print('Finished.')
 
 print('Calculating partial scores...')
+df = cf.define_home_away_teams(df)
 df = df.sort_values(['match_id', 'period', 'index'])
 df = df.groupby('match_id', group_keys = False).apply(cf.calculate_score_per_match)
 df = cf.add_poss_team_match_state(df)
 print('Finished.')
 
-
+print('Cleaning rows and cols...')
+#df = dc.remove_invalid_time(df)
+df = dc.drop_predef_cols(df)
+df = dc.fill_predef_cols(df)
+print('Finished.')
 
 
 print("Adding freeze_frame_vars...")

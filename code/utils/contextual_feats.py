@@ -81,3 +81,24 @@ def add_poss_team_match_state(df):
 
     return df
 
+def define_home_away_teams(events_df):
+    competitions = sb.competitions()
+    unique_competitions = competitions[['competition_id', 'season_id']].drop_duplicates()
+    all_matches = []
+    for index, row in unique_competitions.iterrows():
+        matches = sb.matches(
+            competition_id=row['competition_id'], 
+            season_id=row['season_id']
+        )
+        matches_filtered_columns = matches[['match_id', 'home_team', 'away_team']]
+        all_matches.append(matches_filtered_columns)
+    matches_df = pd.concat(all_matches, ignore_index=True)
+    matches_df['match_id'] = matches_df['match_id'].astype(int)
+    events_df['match_id'] = events_df['match_id'].astype(int)
+    events_df = events_df.merge(matches_df, on='match_id', how='left')
+    events_df['venue'] = np.where(
+        events_df['team_name'] == events_df['home_team'],
+        'home',
+        'away'
+    )
+    return events_df

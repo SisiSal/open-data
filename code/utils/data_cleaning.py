@@ -158,6 +158,7 @@ def filter_rows():
     events_df = pd.concat(all_events, ignore_index=True)
     print(events_df.shape)
     print(events_df.head())
+    events_df.to_csv('events_df.csv', index=False)
     return events_df
 
 def remove_invalid_time(df):
