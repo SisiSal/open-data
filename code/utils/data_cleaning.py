@@ -2,7 +2,7 @@ import os
 import json
 import pandas as pd
 import numpy as np
-
+from Code.utils.geo_feats import calculate_distance_coordinates
 
 def add_pass_type(df):
     '''
@@ -55,13 +55,6 @@ def add_pass_type(df):
 
         df.at[idx, "pass_type"] = pass_type
 
-def euclid(p1, p2):
-    if not isinstance(p1, (list, tuple)) or not isinstance(p2, (list, tuple)):
-        return np.nan
-    if len(p1) < 2 or len(p2) < 2:
-        return np.nan
-    return ((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)**0.5
-
 def add_duration_buildup_shot(df):
     """
     Adds a column "duration_buildup_shot" to the dataframe, representing the duration (in seconds)
@@ -103,8 +96,8 @@ def add_duration_buildup_shot(df):
 
 def add_distance_buildup_shot(df):
     """
-    Adds a column "distance_buildup_shot" to the dataframe, representing the total distance
-    covered during the buildup to each shot within the same possession.
+    Adds a column 'distance_buildup_shot' representing the total
+    distance traveled by the ball during the buildup prior to the shot.
     """
 
     # event time in seconds
@@ -116,24 +109,34 @@ def add_distance_buildup_shot(df):
     df["distance_buildup_shot"] = np.nan
 
     # process each shot
-    shot_rows = df[df["type_name"] == "Shot"]
-
-    for idx, shot in shot_rows.iterrows():
+    for idx, shot in df[df["type_name"] == "Shot"].iterrows():
 
         key = shot["possession_key"]
 
-        # all events in that possession within the same period
-        poss_df = df[df["possession_key"] == key].sort_values("event_time")
+        poss_df = (
+            df[df["possession_key"] == key]
+            .sort_values("event_time")
+        )
 
-        # extract xy locations
-        locations = poss_df["location"].tolist()
+        # keep only events *before* the shot
+        poss_df = poss_df[poss_df["event_time"] <= shot["event_time"]]
+
+        # extract valid xy locations only
+        locations = [
+            loc for loc in poss_df["location"].tolist()
+            if isinstance(loc, list) and len(loc) == 2
+        ]
 
         # compute cumulative distance
         total_dist = 0.0
         for i in range(1, len(locations)):
-            total_dist += euclid(locations[i-1], locations[i])
+            x1, y1 = locations[i-1]
+            x2, y2 = locations[i]
+            total_dist += calculate_distance_coordinates(x1, y1, x2, y2)
 
         df.at[idx, "distance_buildup_shot"] = total_dist
+
+    return df
 
 path = "data/events"
 all_events = []
