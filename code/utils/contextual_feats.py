@@ -65,4 +65,15 @@ def calculate_score_per_match(match_df):
     match_df.drop([f'{team_A}', f'{team_B}'], axis = 1, inplace = True)
     return match_df
 
+def add_poss_team_match_state(df):
+    """
+    Adds poss_team_match_state efficiently (vectorized).
+    """
+
+    df['poss_team_match_state'] = 'opponent'  # default
+
+    df.loc[df['winning_team'] == 'draw', 'poss_team_match_state'] = 'draw'
+    df.loc[df['winning_team'] == df['possession_team_name'], 'poss_team_match_state'] = 'possession'
+
+    return df
 

@@ -100,8 +100,8 @@ def freeze_frame_vars(freeze_frame, shot_location_x, shot_location_y):
     ## traverse the freeze frame
     for frame in freeze_frame:
         ## fetch coodinate location of the players
-        x_coord = frame["location"].apply(lambda x: x[0])
-        y_coord = frame["location"].apply(lambda x: x[1])
+        x_coord = frame["location"][0]
+        y_coord = frame["location"][1]
 
         ## fetch player's position
         position = frame["position"]["name"]
@@ -123,3 +123,45 @@ def freeze_frame_vars(freeze_frame, shot_location_x, shot_location_y):
             dis_shot_keeper = calculate_distance_coordinates(x_coord, y_coord, shot_location_x, shot_location_y)
     
     return count_teammate, count_opponent, goal_keeper_angle, dis_goal_keeper, dis_shot_keeper
+
+def add_freeze_frame_vars(df):
+    """
+    Function to add freeze frame variables to dataframe.
+
+    Args:
+        df (DataFrame): input dataframe.
+
+    Returns:
+        DataFrame: dataframe with added freeze frame variables.
+    """    
+        # Initialize lists to store new variables
+    teammates_between = []
+    opponents_between = []
+    gk_angle = []
+    gk_dist_goal = []
+    gk_dist_shot = []
+
+    # Loop through each row to compute freeze-frame variables
+    for i, row in df.iterrows():
+        freeze_frame = row["shot_freeze_frame"]
+        shot_x = row["loc_x"]
+        shot_y = row["loc_y"]
+
+        # Call your existing function
+        count_teammate, count_opponent, goal_keeper_angle, dis_goal_keeper, dis_shot_keeper = freeze_frame_vars(
+            freeze_frame, shot_x, shot_y
+        )
+
+        teammates_between.append(count_teammate)
+        opponents_between.append(count_opponent)
+        gk_angle.append(goal_keeper_angle)
+        gk_dist_goal.append(dis_goal_keeper)
+        gk_dist_shot.append(dis_shot_keeper)
+    
+    df["num_teammate_in_between"] = teammates_between
+    df["num_opponent_in_between"] = opponents_between
+    df['player_in_between'] = df["num_opponent_in_between"] + df["num_teammate_in_between"]
+    df["goal_keeper_angle"] = gk_angle
+    df["dist_goal_keeper"] = gk_dist_goal
+    df["dist_shot_keeper"] = gk_dist_shot
+    return df
