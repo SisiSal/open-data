@@ -96,9 +96,20 @@ def define_home_away_teams(events_df):
     matches_df['match_id'] = matches_df['match_id'].astype(int)
     events_df['match_id'] = events_df['match_id'].astype(int)
     events_df = events_df.merge(matches_df, on='match_id', how='left')
+    print(events_df.columns)
     events_df['venue'] = np.where(
         events_df['team_name'] == events_df['home_team'],
         'home',
         'away'
     )
+    return events_df
+
+def define_game_state_home_or_away(events_df):
+    conditions = [
+        (events_df['winning_team'] == 'draw'),
+        (events_df['winning_team'] == events_df['home_team']),
+        (events_df['winning_team'] == events_df['away_team'])
+    ]
+    choices = ['Draw', 'Home', 'Away']
+    events_df['game_state'] = np.select(conditions, choices, default='Unknown')
     return events_df

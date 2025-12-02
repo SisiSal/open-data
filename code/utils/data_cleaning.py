@@ -176,7 +176,7 @@ def remove_empty_cols(df):
 def drop_predef_cols(df):
     df.drop(['player_id', 'player_name', 'position_id', 'position_name', 'off_camera', 'shot_end_location'], axis = 1, inplace = True)
     df.drop(['shot_technique_name', 'shot_type_id', 'shot_type_name'], axis = 1, inplace = True)
-    df.drop(['out', 'shot_saved_to_post', 'shot_saved_off_target'], axis = 1, inplace = True)
+    df.drop(['out', 'shot_saved_to_post', 'shot_saved_off_target', 'home_team', 'away_team'], axis = 1, inplace = True)
     return df
 
 def fill_predef_cols(df):
