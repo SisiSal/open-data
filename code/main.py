@@ -16,6 +16,8 @@ print('Starting filtering files...')
 df = dc.filter_rows()
 print('Finished.')
 
+
+
 print('Calculating time on pitch...')
 df = cf.calculate_player_on_pitch(df)
 print('Finished.')
@@ -24,6 +26,12 @@ print('Cleaning rows and cols...')
 df = dc.remove_invalid_time(df)
 df = dc.drop_predef_cols(df)
 df = dc.fill_predef_cols(df)
+print('Finished.')
+
+#drop all columns with only empty values to replace this next function
+#df = dc.remove_empty_cols(df)
+print('Dropping empty columns...')
+df = df.dropna(axis=1, how='all')
 print('Finished.')
 
 print('Extracting position X and Y from location column...')
@@ -47,11 +55,7 @@ df = df.groupby('match_id', group_keys = False).apply(cf.calculate_score_per_mat
 df = cf.add_poss_team_match_state(df)
 print('Finished.')
 
-#drop all columns with only empty values to replace this next function
-#df = dc.remove_empty_cols(df)
-print('Dropping empty columns...')
-df = df.dropna(axis=1, how='all')
-print('Finished.')
+
 
 
 print("Adding freeze_frame_vars...")
