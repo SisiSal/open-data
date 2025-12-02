@@ -74,9 +74,6 @@ def log_reg_mod(train_df, test_df, target_col, drop_cols=None):
 
     Returns:
         model (Pipeline or LogisticRegression): Fitted model
-        prob_test (array): Predicted probabilities for class 1
-        preds_test (array): Predicted class labels
-        accuracy (float): Test accuracy
     """
 
     # Columns not to use as features
@@ -97,7 +94,7 @@ def log_reg_mod(train_df, test_df, target_col, drop_cols=None):
     model = LogisticRegression(
                 C=0.3593813663804626,
                 penalty="l2",
-                solver="lbfgs" #adjuste parameters according to grid search results
+                solver="lbfgs" #adjust parameters according to grid search results
                 )
 
     # Fit model
@@ -109,5 +106,185 @@ def log_reg_mod(train_df, test_df, target_col, drop_cols=None):
 
     evaluate_model(targ_test, preds_test, prob_test)
 
-    return model, prob_test, preds_test
+    return model
 
+#Random Forest Model
+from sklearn.ensemble import RandomForestClassifier
+def random_forest_mod(train_df, test_df, target_col, drop_cols=None):
+    """
+    Fit a Random Forest classifier and predict on test data.
+    
+    Parameters:
+        train_df (pd.DataFrame): Training dataset
+        test_df (pd.DataFrame): Test dataset
+        target_col (str): Name of the target variable (0/1)
+        drop_cols (list): Optional list of non-feature columns to exclude (e.g., IDs)
+    Returns:
+        model (RandomForestClassifier): Fitted Random Forest model
+    """
+    if drop_cols is None:
+        drop_cols = []
+
+    non_features = drop_cols + [target_col]
+
+    # Build feature list
+    features = [c for c in train_df.columns if c not in non_features]
+
+    feat_train = train_df[features]
+    targ_train = train_df[target_col]
+    feat_test = test_df[features]
+    targ_test = test_df[target_col]
+
+    # Initialize Random Forest model
+    model = RandomForestClassifier(
+                n_estimators=100,
+                max_depth=10,
+                random_state=42
+                )
+
+    # Fit model
+    model.fit(feat_train, targ_train)
+
+    # Predictions
+    prob_test = model.predict_proba(feat_test)[:, 1]   # xG values
+    preds_test = model.predict(feat_test)
+
+    evaluate_model(targ_test, preds_test, prob_test)
+
+    return model
+
+#XGBoost Model
+import xgboost as xgb
+def xgboost_mod(train_df, test_df, target_col, drop_cols=None):
+    """
+    Fit an XGBoost classifier and predict on test data.
+    
+    Parameters:
+        train_df (pd.DataFrame): Training dataset
+        test_df (pd.DataFrame): Test dataset
+        target_col (str): Name of the target variable (0/1)
+        drop_cols (list): Optional list of non-feature columns to exclude (e.g., IDs
+    Returns:
+        model (xgb.XGBClassifier): Fitted XGBoost model
+    """
+    if drop_cols is None:
+        drop_cols = []
+
+    non_features = drop_cols + [target_col]
+
+    # Build feature list
+    features = [c for c in train_df.columns if c not in non_features]
+
+    feat_train = train_df[features]
+    targ_train = train_df[target_col]
+    feat_test = test_df[features]
+    targ_test = test_df[target_col]
+
+    # Initialize XGBoost model
+    model = xgb.XGBClassifier(
+                n_estimators=100,
+                max_depth=6,
+                learning_rate=0.1,
+                use_label_encoder=False,
+                eval_metric='logloss',
+                random_state=42
+                )
+
+    # Fit model
+    model.fit(feat_train, targ_train)
+
+    # Predictions
+    prob_test = model.predict_proba(feat_test)[:, 1]   # xG values
+    preds_test = model.predict(feat_test)
+
+    evaluate_model(targ_test, preds_test, prob_test)
+
+    return model
+
+#Neural Network Model
+from sklearn.neural_network import MLPClassifier
+def neural_network_mod(train_df, test_df, target_col, drop_cols=None):
+    """
+    Fit a Neural Network (MLPClassifier) and predict on test data.
+    
+    Parameters:
+        train_df (pd.DataFrame): Training dataset
+        test_df (pd.DataFrame): Test dataset
+        target_col (str): Name of the target variable (0/1)
+        drop_cols (list): Optional list of non-feature columns to exclude (e.g., IDs
+    Returns:
+        model (MLPClassifier): Fitted Neural Network model
+    """
+    if drop_cols is None:
+        drop_cols = []
+
+    non_features = drop_cols + [target_col]
+
+    # Build feature list
+    features = [c for c in train_df.columns if c not in non_features]
+
+    feat_train = train_df[features]
+    targ_train = train_df[target_col]
+    feat_test = test_df[features]
+    targ_test = test_df[target_col]
+
+    # Initialize Neural Network model
+    model = MLPClassifier(
+                hidden_layer_sizes=(100,),
+                activation='relu',
+                solver='adam',
+                max_iter=200,
+                random_state=42
+                )
+
+    # Fit model
+    model.fit(feat_train, targ_train)
+
+    # Predictions
+    prob_test = model.predict_proba(feat_test)[:, 1]   # xG values
+    preds_test = model.predict(feat_test)
+
+    evaluate_model(targ_test, preds_test, prob_test)
+
+    return model
+
+#Naive Bayes Model
+from sklearn.naive_bayes import GaussianNB
+def naive_bayes_mod(train_df, test_df, target_col, drop_cols=None):
+    """
+    Fit a Gaussian Naive Bayes classifier and predict on test data.
+    
+    Parameters:
+        train_df (pd.DataFrame): Training dataset
+        test_df (pd.DataFrame): Test dataset
+        target_col (str): Name of the target variable (0/1)
+        drop_cols (list): Optional list of non-feature columns to exclude (e.g., IDs
+    Returns:
+        model (GaussianNB): Fitted Naive Bayes model
+    """
+    if drop_cols is None:
+        drop_cols = []
+
+    non_features = drop_cols + [target_col]
+
+    # Build feature list
+    features = [c for c in train_df.columns if c not in non_features]
+
+    feat_train = train_df[features]
+    targ_train = train_df[target_col]
+    feat_test = test_df[features]
+    targ_test = test_df[target_col]
+
+    # Initialize Naive Bayes model
+    model = GaussianNB()
+
+    # Fit model
+    model.fit(feat_train, targ_train)
+
+    # Predictions
+    prob_test = model.predict_proba(feat_test)[:, 1]   # xG values
+    preds_test = model.predict(feat_test)
+
+    evaluate_model(targ_test, preds_test, prob_test)
+
+    return model
