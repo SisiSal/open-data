@@ -16,8 +16,6 @@ print('Starting filtering files...')
 df = dc.filter_rows()
 print('Finished.')
 
-
-
 print('Calculating time on pitch...')
 df = cf.calculate_player_on_pitch(df)
 print('Finished.')
