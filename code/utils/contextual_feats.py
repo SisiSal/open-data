@@ -42,8 +42,12 @@ def calculate_score_per_match(match_df):
     if len(teams) == 2:
         team_B = teams[1]
     else:
-        team_B = 'other_team'
-        print(f'match {match_df.iloc[0]['match_id']}')
+        home_name = match_df.iloc[0]['home_team']
+        away_name = match_df.iloc[0]['away_team']
+        if team_A == home_name:
+            team_B = away_name
+        else:
+            team_B = home_name
     is_goal = match_df['shot_outcome_name'] == 'Goal'
     goals_team_A = is_goal & (match_df['team_name'] == team_A)
     goals_team_B = is_goal & (match_df['team_name'] == team_B)

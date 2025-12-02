@@ -1,9 +1,9 @@
 import ast
 import pandas as pd
 import numpy as np
-import Code.utils.contextual_feats as cf
-import Code.utils.geo_feats as gf
-import Code.utils.data_cleaning as dc
+import utils.contextual_feats as cf
+import utils.geo_feats as gf
+import utils.data_cleaning as dc
 #from Code.utils.contextual_feats import calculate_score_per_match, calculate_player_on_pitch
 #from Code.utils.geo_feats import calculate_distance_coordinates, calculate_post_angle, freeze_frame_vars
 #from Code.utils.data_cleaning import add_pass_type, filter_rows, remove_empty_cols, remove_invalid_time, drop_predef_cols, fill_predef_cols
