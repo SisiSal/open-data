@@ -9,6 +9,9 @@
 processed_events.csv
 processed_events_backup.csv
 checkpoint.csv
+exploratory_analysis.ipynb
+*.ipynb
+*.csv
 
 # Logs
 *.log

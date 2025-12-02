@@ -42,8 +42,12 @@ def calculate_score_per_match(match_df):
     if len(teams) == 2:
         team_B = teams[1]
     else:
-        team_B = 'other_team'
-        print(f'match {match_df.iloc[0]['match_id']}')
+        home_name = match_df.iloc[0]['home_team']
+        away_name = match_df.iloc[0]['away_team']
+        if team_A == home_name:
+            team_B = away_name
+        else:
+            team_B = home_name
     is_goal = match_df['shot_outcome_name'] == 'Goal'
     goals_team_A = is_goal & (match_df['team_name'] == team_A)
     goals_team_B = is_goal & (match_df['team_name'] == team_B)
@@ -77,3 +81,35 @@ def add_poss_team_match_state(df):
 
     return df
 
+def define_home_away_teams(events_df):
+    competitions = sb.competitions()
+    unique_competitions = competitions[['competition_id', 'season_id']].drop_duplicates()
+    all_matches = []
+    for index, row in unique_competitions.iterrows():
+        matches = sb.matches(
+            competition_id=row['competition_id'], 
+            season_id=row['season_id']
+        )
+        matches_filtered_columns = matches[['match_id', 'home_team', 'away_team']]
+        all_matches.append(matches_filtered_columns)
+    matches_df = pd.concat(all_matches, ignore_index=True)
+    matches_df['match_id'] = matches_df['match_id'].astype(int)
+    events_df['match_id'] = events_df['match_id'].astype(int)
+    events_df = events_df.merge(matches_df, on='match_id', how='left')
+    print(events_df.columns)
+    events_df['venue'] = np.where(
+        events_df['team_name'] == events_df['home_team'],
+        'home',
+        'away'
+    )
+    return events_df
+
+def define_game_state_home_or_away(events_df):
+    conditions = [
+        (events_df['winning_team'] == 'draw'),
+        (events_df['winning_team'] == events_df['home_team']),
+        (events_df['winning_team'] == events_df['away_team'])
+    ]
+    choices = ['Draw', 'Home', 'Away']
+    events_df['game_state'] = np.select(conditions, choices, default='Unknown')
+    return events_df

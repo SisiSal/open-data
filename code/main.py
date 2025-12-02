@@ -1,9 +1,9 @@
 import ast
 import pandas as pd
 import numpy as np
-import Code.utils.contextual_feats as cf
-import Code.utils.geo_feats as gf
-import Code.utils.data_cleaning as dc
+import utils.contextual_feats as cf
+import utils.geo_feats as gf
+import utils.data_cleaning as dc
 #from Code.utils.contextual_feats import calculate_score_per_match, calculate_player_on_pitch
 #from Code.utils.geo_feats import calculate_distance_coordinates, calculate_post_angle, freeze_frame_vars
 #from Code.utils.data_cleaning import add_pass_type, filter_rows, remove_empty_cols, remove_invalid_time, drop_predef_cols, fill_predef_cols
@@ -14,16 +14,11 @@ importlib.reload(dc)
 
 print('Starting filtering files...')
 df = dc.filter_rows()
+df = pd.read_csv('processed_events.csv')
 print('Finished.')
 
 print('Calculating time on pitch...')
 df = cf.calculate_player_on_pitch(df)
-print('Finished.')
-
-print('Cleaning rows and cols...')
-df = dc.remove_invalid_time(df)
-df = dc.drop_predef_cols(df)
-df = dc.fill_predef_cols(df)
 print('Finished.')
 
 #drop all columns with only empty values to replace this next function
@@ -35,6 +30,8 @@ print('Finished.')
 print('Extracting position X and Y from location column...')
 df['loc_x'] = df['location'].apply(lambda x: x[0])
 df['loc_y'] = df['location'].apply(lambda x: x[1])
+df['loc_x'] = pd.to_numeric(df['loc_x'], errors='coerce')
+df['loc_y'] = pd.to_numeric(df['loc_y'], errors='coerce')
 print('Finished.')
 
 print('Calculating distance to post...')
@@ -48,12 +45,18 @@ df['angle_to_post'] = vector_cal_post_angle(df['loc_x'], df['loc_y'])
 print('Finished.')
 
 print('Calculating partial scores...')
+df = cf.define_home_away_teams(df)
 df = df.sort_values(['match_id', 'period', 'index'])
 df = df.groupby('match_id', group_keys = False).apply(cf.calculate_score_per_match)
 df = cf.add_poss_team_match_state(df)
+df = cf.define_game_state_home_or_away(df)
 print('Finished.')
 
-
+print('Cleaning rows and cols...')
+df = dc.remove_invalid_time(df)
+df = dc.drop_predef_cols(df)
+df = dc.fill_predef_cols(df)
+print('Finished.')
 
 
 print("Adding freeze_frame_vars...")
