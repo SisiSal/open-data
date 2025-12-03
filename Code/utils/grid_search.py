@@ -40,7 +40,7 @@ def tune_log_model(x, y):
     best_clf = clf.fit(x, y)
 
     ## best score
-    print("ROC-AUC :",best_clf.best_score_,"\nBest Estimator:", best_model.best_estimator_)
+    print("ROC-AUC :",best_clf.best_score_,"\nBest Estimator:", best_clf.best_estimator_)
     print(f'Accuracy - : {best_clf.score(x,y):.3f}')
 
     return best_clf.best_params_
@@ -58,7 +58,7 @@ def tune_random_forest(x, y):
         dict: containing parameter values
     """  
     ## make param grid
-    param_gird = {
+    param_grid = {
         "n_estimators": [100, 200, 300, 400, 500],
         "max_depth": [1, 2, 5, 7, 9, 11, 15],
         "criterion": ["gini", "entropy"],
@@ -71,7 +71,7 @@ def tune_random_forest(x, y):
     ## run grid search
     clf = GridSearchCV(
         estimator=rf_model,
-        param_grid=param_gird,
+        param_grid=param_grid,
         scoring="roc_auc",
         n_jobs=-1,
         cv=5,
@@ -81,7 +81,8 @@ def tune_random_forest(x, y):
     best_clf = clf.fit(x, y)
 
     ## best score
-    print("ROC-AUC :",best_clf.best_score_)
+    print("ROC-AUC :",best_clf.best_score_,"\nBest Estimator:", best_clf.best_estimator_)
+    print(f'Accuracy - : {best_clf.score(x,y):.3f}')
 
     return best_clf.best_params_
 
@@ -101,7 +102,7 @@ def tune_xg_boost(x, y):
     xgboost_model = XGBClassifier()
 
     ## make param grid
-    params={
+    param_grid={
         "learning_rate"    : [0.05, 0.10, 0.15, 0.20, 0.25, 0.3] ,
         "max_depth"        : [ 3, 4, 5, 6, 8, 10, 12, 15],
         "min_child_weight" : [ 1, 3, 5, 7 ],
@@ -110,21 +111,22 @@ def tune_xg_boost(x, y):
     }
 
     ## run randomized-search
-    best_model = RandomizedSearchCV(
+    clf = RandomizedSearchCV(
         estimator=xgboost_model,
-        param_distributions=params,
+        param_distributions=param_grid,
         n_iter=125,
         scoring="roc_auc",
         n_jobs=-1,
         cv=5,
         verbose=1
     )
-    best_model.fit(x, y)
+    best_clf = clf.fit(x, y)
 
     ## best score
-    print("ROC-AUC :",best_model.best_score_)
+    print("ROC-AUC :",best_clf.best_score_,"\nBest Estimator:", best_clf.best_estimator_)
+    print(f'Accuracy - : {best_clf.score(x,y):.3f}')
 
-    return best_model.best_params_
+    return best_clf.best_params_
 
 def tune_neural_network(x, y):
     """
@@ -139,7 +141,7 @@ def tune_neural_network(x, y):
     """ 
     ## init Neural Network model
     from sklearn.neural_network import MLPClassifier
-    clf = MLPClassifier()
+    nn_model = MLPClassifier()
 
     ## make param grid
     param_grid = {
@@ -151,17 +153,55 @@ def tune_neural_network(x, y):
     }
 
     ## run grid search
-    best_model = GridSearchCV(
-        estimator=clf,
+    clf = GridSearchCV(
+        estimator=nn_model,
         param_grid=param_grid,
         scoring="roc_auc",
         n_jobs=-1,
         cv=5,
         verbose=1
     )
-    best_model.fit(x, y)
+    best_clf = clf.fit(x, y)
 
     ## best score
-    print("ROC-AUC :",best_model.best_score_)
+    print("ROC-AUC :",best_clf.best_score_,"\nBest Estimator:", best_clf.best_estimator_)
+    print(f'Accuracy - : {best_clf.score(x,y):.3f}')
 
-    return best_model.best_params_
+    return best_clf.best_params_
+
+def tune_naive_bayes(x, y):
+    """
+    Function for performing hyperparameter 
+    tuning for naive bayes model.
+
+    Args:
+        x (numpy.ndarray): the feature value.
+        y (numpy.ndarray): the target value.
+    Returns:
+        dict: containing parameter values
+    """
+    ## init Naive Bayes model
+    from sklearn.naive_bayes import GaussianNB
+    nb_model = GaussianNB()
+
+    ## make param grid
+    param_grid = {
+        'var_smoothing': np.logspace(0,-9, num=100)
+    }
+
+    ## run grid search
+    clf = GridSearchCV(
+        estimator=nb_model,
+        param_grid=param_grid,
+        scoring="roc_auc",
+        n_jobs=-1,
+        cv=5,
+        verbose=1
+    )
+    best_clf = clf.fit(x, y)
+
+    ## best score
+    print("ROC-AUC :",best_clf.best_score_,"\nBest Estimator:", best_clf.best_estimator_)
+    print(f'Accuracy - : {best_clf.score(x,y):.3f}')
+
+    return best_clf.best_params_

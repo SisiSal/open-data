@@ -12,6 +12,9 @@ importlib.reload(gf)
 importlib.reload(cf)
 importlib.reload(dc)
 
+
+### Data Preprocessing
+
 print('Starting filtering files...')
 df = dc.filter_rows()
 #df = pd.read_csv('processed_events.csv')
@@ -62,6 +65,5 @@ df = gf.add_freeze_frame_vars(df)
 print('Finished.')
 
 df.to_csv('processed_events.csv', index=False)
-
 
 #df_test = df.copy()

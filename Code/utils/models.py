@@ -100,13 +100,17 @@ def log_reg_mod(train_df, test_df, target_col, drop_cols=None):
     # Fit model
     model.fit(feat_train, targ_train)
 
-    # Predictions
-    prob_test = model.predict_proba(feat_test)[:, 1]   # xG values
+    # xG Predictions
+    train_df["xG"] = model.predict_proba(feat_train)[:, 1]
+    test_df["xG"]  = model.predict_proba(feat_test)[:, 1]
+    
+    # Get predicted classes
     preds_test = model.predict(feat_test)
 
-    evaluate_model(targ_test, preds_test, prob_test)
 
-    return model
+    evaluate_model(targ_test, preds_test, test_df["xG"])
+
+    return model, train_df, test_df
 
 #Random Forest Model
 from sklearn.ensemble import RandomForestClassifier
@@ -145,13 +149,16 @@ def random_forest_mod(train_df, test_df, target_col, drop_cols=None):
     # Fit model
     model.fit(feat_train, targ_train)
 
-    # Predictions
-    prob_test = model.predict_proba(feat_test)[:, 1]   # xG values
+    # xG Predictions
+    train_df["xG"] = model.predict_proba(feat_train)[:, 1]
+    test_df["xG"]  = model.predict_proba(feat_test)[:, 1]
+    
+    # Get predicted classes
     preds_test = model.predict(feat_test)
 
-    evaluate_model(targ_test, preds_test, prob_test)
+    evaluate_model(targ_test, preds_test, test_df["xG"])
 
-    return model
+    return model, train_df, test_df
 
 #XGBoost Model
 import xgboost as xgb
@@ -193,13 +200,16 @@ def xgboost_mod(train_df, test_df, target_col, drop_cols=None):
     # Fit model
     model.fit(feat_train, targ_train)
 
-    # Predictions
-    prob_test = model.predict_proba(feat_test)[:, 1]   # xG values
+    # xG Predictions
+    train_df["xG"] = model.predict_proba(feat_train)[:, 1]
+    test_df["xG"]  = model.predict_proba(feat_test)[:, 1]
+    
+    # Get predicted classes
     preds_test = model.predict(feat_test)
 
-    evaluate_model(targ_test, preds_test, prob_test)
+    evaluate_model(targ_test, preds_test, test_df["xG"])
 
-    return model
+    return model, train_df, test_df
 
 #Neural Network Model
 from sklearn.neural_network import MLPClassifier
@@ -240,13 +250,16 @@ def neural_network_mod(train_df, test_df, target_col, drop_cols=None):
     # Fit model
     model.fit(feat_train, targ_train)
 
-    # Predictions
-    prob_test = model.predict_proba(feat_test)[:, 1]   # xG values
+    # xG Predictions
+    train_df["xG"] = model.predict_proba(feat_train)[:, 1]
+    test_df["xG"]  = model.predict_proba(feat_test)[:, 1]
+    
+    # Get predicted classes
     preds_test = model.predict(feat_test)
 
-    evaluate_model(targ_test, preds_test, prob_test)
+    evaluate_model(targ_test, preds_test, test_df["xG"])
 
-    return model
+    return model, train_df, test_df
 
 #Naive Bayes Model
 from sklearn.naive_bayes import GaussianNB
@@ -281,10 +294,13 @@ def naive_bayes_mod(train_df, test_df, target_col, drop_cols=None):
     # Fit model
     model.fit(feat_train, targ_train)
 
-    # Predictions
-    prob_test = model.predict_proba(feat_test)[:, 1]   # xG values
+    # xG Predictions
+    train_df["xG"] = model.predict_proba(feat_train)[:, 1]
+    test_df["xG"]  = model.predict_proba(feat_test)[:, 1]
+    
+    # Get predicted classes
     preds_test = model.predict(feat_test)
 
-    evaluate_model(targ_test, preds_test, prob_test)
+    evaluate_model(targ_test, preds_test, test_df["xG"])
 
-    return model
+    return model, train_df, test_df
