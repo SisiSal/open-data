@@ -16,13 +16,11 @@ importlib.reload(dc)
 
 print('Starting filtering files...')
 df = dc.filter_rows()
-#df = pd.read_csv('processed_events.csv')
 print('Finished.')
 
 print('Calculating time on pitch...')
 df = cf.calculate_player_on_pitch(df)
 df['time_on_field'] = pd.to_timedelta(df['time_on_field'])
-df['time_seconds'] = df['time_on_field'].dt.total_seconds().fillna(0)
 print('Finished.')
 
 #drop all columns with only empty values to replace this next function
@@ -68,6 +66,8 @@ print('Cleaning rows and cols...')
 df = dc.remove_invalid_time(df)
 df = dc.drop_predef_cols(df)
 df = dc.fill_predef_cols(df)
+df['time_on_field'] = df['time_on_field'].dt.total_seconds().fillna(0)
+df['time_on_field'] = df['time_on_field'].astype(float)
 print('Finished.')
 
 print('hot encoding categorical columns...')

@@ -1,4 +1,6 @@
+import ast
 import math
+import json
 import numpy as np
 
 #Second distance by default is opponent's goal
@@ -100,6 +102,8 @@ def freeze_frame_vars(freeze_frame, shot_location_x, shot_location_y):
     ## traverse the freeze frame
     for frame in freeze_frame:
         ## fetch coodinate location of the players
+        if isinstance(frame, str):
+                frame = json.loads(frame)
         x_coord = frame["location"][0]
         y_coord = frame["location"][1]
 
@@ -144,6 +148,8 @@ def add_freeze_frame_vars(df):
     # Loop through each row to compute freeze-frame variables
     for i, row in df.iterrows():
         freeze_frame = row["shot_freeze_frame"]
+        if(isinstance(freeze_frame, str)):
+            freeze_frame = ast.literal_eval(freeze_frame)
         shot_x = row["loc_x"]
         shot_y = row["loc_y"]
 
