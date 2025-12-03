@@ -6,13 +6,16 @@ import Code.utils.geo_feats as gf
 import Code.utils.data_cleaning as dc
 import Code.utils.fig_generation as fg
 import Code.utils.split_data as sd
-#from Code.utils.contextual_feats import calculate_score_per_match, calculate_player_on_pitch
-#from Code.utils.geo_feats import calculate_distance_coordinates, calculate_post_angle, freeze_frame_vars
-#from Code.utils.data_cleaning import add_pass_type, filter_rows, remove_empty_cols, remove_invalid_time, drop_predef_cols, fill_predef_cols
+import Code.utils.grid_search as gs
+import Code.utils.models as mod
 import importlib
 importlib.reload(gf)
 importlib.reload(cf)
 importlib.reload(dc)
+importlib.reload(fg)
+importlib.reload(sd)
+importlib.reload(gs)
+importlib.reload(mod)
 
 
 ### Data Preprocessing
@@ -75,6 +78,10 @@ print('hot encoding categorical columns...')
 df = dc.hot_encode_categorical_columns(df)
 print('Finished.')
 
+
+df.to_csv('processed_events.csv', index=False)
+
+
 print('Creating heatmap...')
 fg.generate_heatmap(df)
 print('Finished.')
@@ -84,6 +91,45 @@ X_train, X_test, y_train, y_test = sd.split_data(df)
 X_train_scaled, X_test_scaled, scaler = sd.standardize_data(X_train, X_test)
 print('Finished.')
 
-df.to_csv('processed_events.csv', index=False)
+
+print('Calculating VIF...')
+X_numeric = df.drop(columns=['goal','match_id'], axis=1)
+vif_table = sd.calculate_vif(X_numeric)
+print(vif_table.sort_values("VIF", ascending=False))
+X_numeric.drop(['dist_to_post','shot_technique_name_Normal','goal_keeper_angle','shot_body_part_name_Right Foot'], axis=1,inplace=True)
+vif_table = sd.calculate_vif(X_numeric)
+print(vif_table.sort_values("VIF", ascending=False))
+print('Finished.')
+
+### Modeling Time XD ###
+
+print('Tuning Models...')
+best_log_params = gs.tune_log_model(X_train_scaled, y_train)
+print('Best Logistic Regression Params:', best_log_params)
+#output: Best Logistic Regression Params: {'C': np.float64(10000.0), 'penalty': 'l2', 'solver': 'lbfgs'}
+best_rf_params = gs.tune_random_forest(X_train_scaled, y_train)
+print('Best Random Forest Params:', best_rf_params)
+#output:
+best_gb_params = gs.tune_xg_boost(X_train_scaled, y_train)
+print('Best XGBoost Params:', best_gb_params)
+#output:
+best_nn_params = gs.tune_neural_network(X_train_scaled, y_train)
+print('Best Neural Network Params:', best_nn_params)
+#output:
+best_nb_params = gs.tune_naive_bayes(X_train_scaled, y_train)
+print('Best Naive Bayes Params:', best_nb_params)
+#output:
+print('Finished.')
+
+print('Add target variable back into scaled data...')
+train_df = X_train_scaled.copy()
+train_df['goal'] = y_train
+test_df = X_test_scaled.copy()
+test_df['goal'] = y_test
+
+print('Apply Logistic Regression...')
+lr_model, train_df, test_df = mod.log_reg_mod(train_df, test_df, "goal")
+
+
 
 #df_test = df.copy()

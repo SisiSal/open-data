@@ -8,14 +8,16 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 #Model Evaluation Metrics
-def evaluate_model(y_test_vec, y_pred, proba_test):
+def evaluate_model(y_train_vec, y_test_vec, y_pred, proba_train, proba_test):
     """
     Evaluate model performance using various classification metrics.
     
     Parameters:
-        y_test_vec (array-like): True labels
+        y_train_vec (array-like): True labels for training data
+        y_test_vec (array-like): True labels for test data
         y_pred (array-like): Predicted labels
-        prob_test (array-like): Predicted probabilities for the positive class
+        proba_test (array-like): Predicted probabilities for the test set
+        proba_train (array-like): Predicted probabilities for the train set
 
     Returns:
         None: Prints out the evaluation metrics
@@ -36,7 +38,7 @@ def evaluate_model(y_test_vec, y_pred, proba_test):
 
     # Optional but often helpful
     f1   = f1_score(y_test_vec, y_pred, pos_label=1)
-    bacc = balanced_accuracy_score(y_test_vec, y_pred)             # (rec + spec)/2
+    bacc = balanced_accuracy_score(y_test_vec, y_pred)            # (rec + spec)/2
 
     print("Confusion matrix (test):\n", cm)
     print(f"Accuracy:     {acc:.4f}")
@@ -48,9 +50,6 @@ def evaluate_model(y_test_vec, y_pred, proba_test):
     print("\n" + "-" * 72 + "\n")
 
     # Precision–Recall curve (useful for imbalanced data)
-    # This shows the trade-off between precision and recall for different thresholds.
-    # Higher recall typically comes at the cost of lower precision, and vice versa.
-    # Ideally, we want to find a balance between the two that minimizes false negatives and false positives, which corresponds to the top right of the curve.
     prec_curve, rec_curve, _ = precision_recall_curve(y_test_vec, proba_test)
     plt.figure()
     plt.plot(rec_curve, prec_curve)
@@ -59,6 +58,27 @@ def evaluate_model(y_test_vec, y_pred, proba_test):
     plt.ylabel("Precision")
     plt.tight_layout()
     plt.show()
+
+    # Test ROC-AUC 
+    auc_score = roc_auc_score(y_test_vec, proba_test)
+    fpr, tpr, _ = roc_curve(y_test_vec, proba_test)
+    print(f"Test ROC-AUC:   {auc_score:.4f}")
+
+    # Plot ROC curve
+    plt.figure()
+    plt.plot(fpr, tpr, label=f"AUC = {auc_score:.4f}")
+    plt.plot([0, 1], [0, 1], linestyle="--")  # diagonal line
+    plt.title("ROC Curve — Logistic Regression")
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate (Recall)")
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
+    # Train ROC-AUC
+    auc_train = roc_auc_score(y_train_vec, proba_train)
+    print(f"Train ROC-AUC:  {auc_train:.4f}")
+
     return None
 
 #Logistic Regression Model
@@ -91,26 +111,27 @@ def log_reg_mod(train_df, test_df, target_col, drop_cols=None):
     targ_test = test_df[target_col]
 
     # Initialize Logistic Regression model
-    model = LogisticRegression(
-                C=0.3593813663804626,
+    lr_model = LogisticRegression(
+                C=10000.0,
                 penalty="l2",
-                solver="lbfgs" #adjust parameters according to grid search results
+                solver="lbfgs",
+                max_iter=1000
                 )
 
     # Fit model
-    model.fit(feat_train, targ_train)
+    lr_model.fit(feat_train, targ_train)
 
     # xG Predictions
-    train_df["xG"] = model.predict_proba(feat_train)[:, 1]
-    test_df["xG"]  = model.predict_proba(feat_test)[:, 1]
+    train_df["lr_xG"] = lr_model.predict_proba(feat_train)[:, 1]
+    test_df["lr_xG"]  = lr_model.predict_proba(feat_test)[:, 1]
     
     # Get predicted classes
-    preds_test = model.predict(feat_test)
+    preds_test = lr_model.predict(feat_test)
 
 
-    evaluate_model(targ_test, preds_test, test_df["xG"])
+    evaluate_model(targ_train, targ_test, preds_test, train_df["lr_xG"], test_df["lr_xG"])
 
-    return model, train_df, test_df
+    return lr_model, train_df, test_df
 
 #Random Forest Model
 from sklearn.ensemble import RandomForestClassifier
@@ -156,7 +177,7 @@ def random_forest_mod(train_df, test_df, target_col, drop_cols=None):
     # Get predicted classes
     preds_test = model.predict(feat_test)
 
-    evaluate_model(targ_test, preds_test, test_df["xG"])
+    evaluate_model(targ_train, targ_test, preds_test, train_df["lr_xG"], test_df["lr_xG"])
 
     return model, train_df, test_df
 
@@ -207,7 +228,7 @@ def xgboost_mod(train_df, test_df, target_col, drop_cols=None):
     # Get predicted classes
     preds_test = model.predict(feat_test)
 
-    evaluate_model(targ_test, preds_test, test_df["xG"])
+    evaluate_model(targ_train, targ_test, preds_test, train_df["lr_xG"], test_df["lr_xG"])
 
     return model, train_df, test_df
 
@@ -257,7 +278,7 @@ def neural_network_mod(train_df, test_df, target_col, drop_cols=None):
     # Get predicted classes
     preds_test = model.predict(feat_test)
 
-    evaluate_model(targ_test, preds_test, test_df["xG"])
+    evaluate_model(targ_train, targ_test, preds_test, train_df["lr_xG"], test_df["lr_xG"])
 
     return model, train_df, test_df
 
@@ -301,6 +322,6 @@ def naive_bayes_mod(train_df, test_df, target_col, drop_cols=None):
     # Get predicted classes
     preds_test = model.predict(feat_test)
 
-    evaluate_model(targ_test, preds_test, test_df["xG"])
+    evaluate_model(targ_train, targ_test, preds_test, train_df["lr_xG"], test_df["lr_xG"])
 
     return model, train_df, test_df
