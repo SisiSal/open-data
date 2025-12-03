@@ -173,12 +173,6 @@ def remove_invalid_time(df):
     df.drop(time_on_field_invalid, inplace=True)
     return df
 
-def remove_empty_cols(df):
-    nunique = df.nunique()
-    cols_to_drop = nunique[nunique == 0].index
-    df.drop(cols_to_drop, axis=1, inplace=True)
-    return df
-
 def drop_predef_cols(df):
     df.drop(['player_id', 'player_name', 'position_id', 'position_name', 'off_camera', 'shot_end_location'], axis = 1, inplace = True)
     df.drop(['shot_technique_name', 'shot_type_id', 'shot_type_name'], axis = 1, inplace = True)

@@ -14,15 +14,13 @@ importlib.reload(dc)
 
 print('Starting filtering files...')
 df = dc.filter_rows()
-df = pd.read_csv('processed_events.csv')
+#df = pd.read_csv('processed_events.csv')
 print('Finished.')
 
 print('Calculating time on pitch...')
 df = cf.calculate_player_on_pitch(df)
 print('Finished.')
 
-#drop all columns with only empty values to replace this next function
-#df = dc.remove_empty_cols(df)
 print('Dropping empty columns...')
 df = df.dropna(axis=1, how='all')
 print('Finished.')
