@@ -5,6 +5,7 @@ import utils.contextual_feats as cf
 import utils.geo_feats as gf
 import utils.data_cleaning as dc
 import utils.fig_generation as fg
+import utils.split_data as sd
 #from Code.utils.contextual_feats import calculate_score_per_match, calculate_player_on_pitch
 #from Code.utils.geo_feats import calculate_distance_coordinates, calculate_post_angle, freeze_frame_vars
 #from Code.utils.data_cleaning import add_pass_type, filter_rows, remove_empty_cols, remove_invalid_time, drop_predef_cols, fill_predef_cols
@@ -75,6 +76,11 @@ print('Finished.')
 
 print('Creating heatmap...')
 fg.generate_heatmap(df)
+print('Finished.')
+
+print('Splitting and standardizing...')
+X_train, X_test, y_train, y_test = sd.split_data(df)
+X_train_scaled, X_test_scaled, scaler = sd.standardize_data(X_train, X_test)
 print('Finished.')
 
 df.to_csv('processed_events.csv', index=False)

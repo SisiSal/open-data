@@ -5,7 +5,6 @@ import pandas as pd
 def split_data(df):
     X = df.drop(columns=['goal', 'match_id'])
     y = df['goal']
-
     X_train, X_test, y_train, y_test = train_test_split(
         X, 
         y, 
@@ -17,14 +16,14 @@ def split_data(df):
     print(f"Original Goal Rate: {y.mean():.4f}")
     print(f"Train Goal Rate:    {y_train.mean():.4f}")
     print(f"Test Goal Rate:     {y_test.mean():.4f}")
-    return X_train, X_test, y_train, 
+    return X_train, X_test, y_train, y_test
 
 def standardize_data(X_train, X_test):
     cols_to_scale = X_train.loc[:, (X_train.nunique() > 2)].columns.tolist()
     X_train_numeric = X_train[cols_to_scale].select_dtypes(include=['number'])
     cols_to_scale = X_train_numeric.columns.tolist()
     scaler = StandardScaler()
-    scaler.fit(X_train[cols_to_scale]) 
+    scaler.fit(X_train[cols_to_scale])
     X_train_scaled = X_train.copy()
     X_train_scaled[cols_to_scale] = scaler.transform(X_train[cols_to_scale])
     X_test_scaled = X_test.copy()

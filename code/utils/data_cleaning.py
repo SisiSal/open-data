@@ -220,4 +220,6 @@ def hot_encode_categorical_columns(df):
         'venue'
         ]
     df = pd.get_dummies(df, columns=categorical_cols, drop_first=True)
+    boolean_cols = df.select_dtypes(include=['bool']).columns
+    df[boolean_cols] = df[boolean_cols].astype(int)
     return df
