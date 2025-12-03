@@ -108,15 +108,18 @@ def add_distance_buildup_shot(df):
 
     df["distance_buildup_shot"] = np.nan
 
+    shot_rows = df[df["type_name"] == "Shot"]
+
     # process each shot
-    for idx, shot in df[df["type_name"] == "Shot"].iterrows():
+    for idx, shot in shot_rows.iterrows():
 
         key = shot["possession_key"]
+        shooting_team = shot["team_name"]
 
-        poss_df = (
-            df[df["possession_key"] == key]
-            .sort_values("event_time")
-        )
+        poss_df = df[
+            (df["possession_key"] == key) &
+            (df["team_name"] == shooting_team)
+        ].sort_values("event_time")
 
         # keep only events *before* the shot
         poss_df = poss_df[poss_df["event_time"] <= shot["event_time"]]
