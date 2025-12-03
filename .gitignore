@@ -12,6 +12,7 @@ checkpoint.csv
 exploratory_analysis.ipynb
 *.ipynb
 *.csv
+*.png
 
 # Logs
 *.log

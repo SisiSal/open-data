@@ -2,7 +2,7 @@ import os
 import json
 import pandas as pd
 import numpy as np
-from Code.utils.geo_feats import calculate_distance_coordinates
+from utils.geo_feats import calculate_distance_coordinates
 
 def add_pass_type(df):
     '''
@@ -174,14 +174,46 @@ def remove_invalid_time(df):
     return df
 
 def drop_predef_cols(df):
-    df.drop(['player_id', 'player_name', 'position_id', 'position_name', 'off_camera', 'shot_end_location'], axis = 1, inplace = True)
-    df.drop(['shot_technique_name', 'shot_type_id', 'shot_type_name'], axis = 1, inplace = True)
-    df.drop(['out', 'shot_saved_to_post', 'shot_saved_off_target', 'home_team', 'away_team'], axis = 1, inplace = True)
-    return df
+    cols_to_keep = cols_to_keep = [
+        'match_id',
+        'goal',
+        'under_pressure',
+        'shot_first_time',
+        'shot_technique_name',
+        'shot_body_part_name',
+        'shot_aerial_won',
+        'pass_type',
+        'duration_buildup_shot',
+        'distance_buildup_shot',
+        'shot_deflected',
+        'shot_open_goal',
+        'shot_follows_dribble',
+        'time_on_field',
+        'dist_to_post',
+        'angle_to_post',
+        'poss_team_match_state',
+        'venue',
+        'player_in_between',
+        'goal_keeper_angle',
+        'dist_goal_keeper',
+        'dist_shot_keeper'
+    ]
+    return df[cols_to_keep].copy()
 
 def fill_predef_cols(df):
-    fill_false = ['shot_open_goal', 'shot_follows_dribble', 'shot_redirect', 'under_pressure', 'shot_aerial_won', 'shot_one_on_one']
-    for col in fill_false:
-        if col in df.columns:
-            df[col] = df[col].fillna(False).astype(bool)
+    fill_false = ['shot_open_goal', 'shot_follows_dribble', 'under_pressure', 'shot_aerial_won', 'shot_first_time', 'shot_deflected']
+    df[fill_false] = df[fill_false].fillna(False).astype(int)
+    return df
+
+def hot_encode_categorical_columns(df):
+    categorical_cols = [
+        'shot_technique_name', 
+        'shot_body_part_name', 
+        'pass_type',
+        'poss_team_match_state',
+        'venue'
+        ]
+    df = pd.get_dummies(df, columns=categorical_cols, drop_first=True)
+    boolean_cols = df.select_dtypes(include=['bool']).columns
+    df[boolean_cols] = df[boolean_cols].astype(int)
     return df
