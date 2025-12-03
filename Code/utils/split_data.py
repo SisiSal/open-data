@@ -1,5 +1,6 @@
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
+from statsmodels.stats.outliers_influence import variance_inflation_factor
 import pandas as pd
 
 def split_data(df):
@@ -29,3 +30,15 @@ def standardize_data(X_train, X_test):
     X_test_scaled = X_test.copy()
     X_test_scaled[cols_to_scale] = scaler.transform(X_test[cols_to_scale])
     return X_train_scaled, X_test_scaled, scaler
+
+
+def calculate_vif(df):
+    """
+    df: DataFrame of ONLY the features (no target variable)
+    returns a DataFrame of VIF values
+    """
+    vif_data = pd.DataFrame()
+    vif_data["feature"] = df.columns
+    vif_data["VIF"] = [variance_inflation_factor(df.values, i) 
+                       for i in range(len(df.columns))]
+    return vif_data
