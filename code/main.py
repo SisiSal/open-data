@@ -23,8 +23,6 @@ df = cf.calculate_player_on_pitch(df)
 df['time_on_field'] = pd.to_timedelta(df['time_on_field'])
 print('Finished.')
 
-#drop all columns with only empty values to replace this next function
-#df = dc.remove_empty_cols(df)
 print('Dropping empty columns...')
 df = df.dropna(axis=1, how='all')
 print('Finished.')
