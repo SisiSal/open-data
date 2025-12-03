@@ -2,7 +2,7 @@ import os
 import json
 import pandas as pd
 import numpy as np
-from Code.utils.geo_feats import calculate_distance_coordinates
+from utils.geo_feats import calculate_distance_coordinates
 
 def add_pass_type(df):
     '''
