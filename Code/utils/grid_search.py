@@ -29,21 +29,21 @@ def tune_log_model(x, y):
     log_model = LogisticRegression()
 
     ## perform grid-search
-    gridsearch = GridSearchCV(
+    clf = GridSearchCV(
         estimator = log_model, 
         param_grid = param_grid,
         scoring = "roc_auc",
-        cv = 3,
+        cv = 5,
         verbose = 1,
         n_jobs = -1
     )
-    best_model = gridsearch.fit(x, y)
+    best_clf = clf.fit(x, y)
 
     ## best score
-    print("ROC-AUC :",best_model.best_score_,"\nBest Estimator:", best_model.best_estimator_)
-    print(f'Accuracy - : {best_model.score(x,y):.3f}')
+    print("ROC-AUC :",best_clf.best_score_,"\nBest Estimator:", best_model.best_estimator_)
+    print(f'Accuracy - : {best_clf.score(x,y):.3f}')
 
-    return best_model.best_params_
+    return best_clf.best_params_
 
 def tune_random_forest(x, y):
     """
@@ -57,9 +57,6 @@ def tune_random_forest(x, y):
     Returns:
         dict: containing parameter values
     """  
-    ## init RandomForesetClassifier object
-    clf = RandomForestClassifier(n_jobs=-1)
-
     ## make param grid
     param_gird = {
         "n_estimators": [100, 200, 300, 400, 500],
@@ -68,21 +65,25 @@ def tune_random_forest(x, y):
         "min_samples_split": [2, 5, 7]
     }
 
+    ## init RandomForesetClassifier object
+    rf_model = RandomForestClassifier(n_jobs=-1)
+
     ## run grid search
-    best_model = GridSearchCV(
-        estimator=clf,
+    clf = GridSearchCV(
+        estimator=rf_model,
         param_grid=param_gird,
         scoring="roc_auc",
         n_jobs=-1,
         cv=5,
         verbose=1
     )
-    best_model.fit(x, y)
+    
+    best_clf = clf.fit(x, y)
 
     ## best score
-    print("ROC-AUC :",best_model.best_score_)
+    print("ROC-AUC :",best_clf.best_score_)
 
-    return best_model.best_params_
+    return best_clf.best_params_
 
 def tune_xg_boost(x, y):
     """
@@ -97,7 +98,7 @@ def tune_xg_boost(x, y):
         dict: containing parameter values
     """ 
     ## init xGBoost model
-    clf = XGBClassifier()
+    xgboost_model = XGBClassifier()
 
     ## make param grid
     params={
@@ -110,9 +111,49 @@ def tune_xg_boost(x, y):
 
     ## run randomized-search
     best_model = RandomizedSearchCV(
-        estimator=clf,
+        estimator=xgboost_model,
         param_distributions=params,
         n_iter=125,
+        scoring="roc_auc",
+        n_jobs=-1,
+        cv=5,
+        verbose=1
+    )
+    best_model.fit(x, y)
+
+    ## best score
+    print("ROC-AUC :",best_model.best_score_)
+
+    return best_model.best_params_
+
+def tune_neural_network(x, y):
+    """
+    Function for performing hyperparameter 
+    tuning for neural network model.
+
+    Args:
+        x (numpy.ndarray): the feature value.
+        y (numpy.ndarray): the target value.
+    Returns:
+        dict: containing parameter values
+    """ 
+    ## init Neural Network model
+    from sklearn.neural_network import MLPClassifier
+    clf = MLPClassifier()
+
+    ## make param grid
+    param_grid = {
+        'hidden_layer_sizes': [(50,50,50), (50,100,50), (100,)],
+        'activation': ['tanh', 'relu'],
+        'solver': ['sgd', 'adam'],
+        'alpha': [0.0001, 0.05],
+        'learning_rate': ['constant','adaptive'],
+    }
+
+    ## run grid search
+    best_model = GridSearchCV(
+        estimator=clf,
+        param_grid=param_grid,
         scoring="roc_auc",
         n_jobs=-1,
         cv=5,
