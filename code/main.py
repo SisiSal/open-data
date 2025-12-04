@@ -1,13 +1,13 @@
 import ast
 import pandas as pd
 import numpy as np
-import utils.contextual_feats as cf
-import utils.geo_feats as gf
-import utils.data_cleaning as dc
-import utils.fig_generation as fg
-import utils.split_data as sd
-import utils.grid_search as gs
-import utils.models as mod
+import Code.utils.contextual_feats as cf
+import Code.utils.geo_feats as gf
+import Code.utils.data_cleaning as dc
+import Code.utils.fig_generation as fg
+import Code.utils.split_data as sd
+import Code.utils.grid_search as gs
+import Code.utils.models as mod
 import importlib
 importlib.reload(gf)
 importlib.reload(cf)
@@ -86,6 +86,7 @@ print('Finished.')
 
 
 df.to_csv('processed_events.csv', index=False)
+df = pd.read_csv('processed_events.csv')
 
 
 print('Creating heatmap...')

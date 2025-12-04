@@ -55,7 +55,7 @@ def evaluate_model(y_train_vec, y_test_vec, y_pred, proba_train, proba_test):
     prec_curve, rec_curve, _ = precision_recall_curve(y_test_vec, proba_test)
     plt.figure()
     plt.plot(rec_curve, prec_curve)
-    plt.title("Precision–Recall Curve — Logistic Regression")
+    plt.title("Precision–Recall Curve")
     plt.xlabel("Recall")
     plt.ylabel("Precision")
     plt.tight_layout()
@@ -70,7 +70,7 @@ def evaluate_model(y_train_vec, y_test_vec, y_pred, proba_train, proba_test):
     plt.figure()
     plt.plot(fpr, tpr, label=f"AUC = {auc_score:.4f}")
     plt.plot([0, 1], [0, 1], linestyle="--")  # diagonal line
-    plt.title("ROC Curve — Logistic Regression")
+    plt.title("ROC Curve")
     plt.xlabel("False Positive Rate")
     plt.ylabel("True Positive Rate (Recall)")
     plt.legend()
@@ -80,6 +80,18 @@ def evaluate_model(y_train_vec, y_test_vec, y_pred, proba_train, proba_test):
     # Train ROC-AUC
     auc_train = roc_auc_score(y_train_vec, proba_train)
     print(f"Train ROC-AUC:  {auc_train:.4f}")
+    print("\n" + "-" * 72 + "\n")
+
+    # Brier Score and Log Loss
+    brier_test = brier_score_loss(y_test_vec, proba_test)
+    ll_test = log_loss(y_test_vec, proba_test)
+    brier_train = brier_score_loss(y_train_vec, proba_train)
+    ll_train = log_loss(y_train_vec, proba_train)
+    print(f"\nBrier Score (test): {brier_test:.4f}")
+    print(f"Brier Score (train): {brier_train:.4f}")
+    print(f"Log Loss (test):    {ll_test:.4f}")
+    print(f"Log Loss (train):    {ll_train:.4f}")
+    print("\n" + "-" * 72 + "\n")
 
     return None
 
@@ -188,9 +200,6 @@ def random_forest_mod(train_df, test_df, target_col, drop_cols=None):
     # Get predicted classes
     preds_test = rf_model.predict(feat_test)
 
-    for col, imp in zip(feat_train.columns, rf_model.feature_importances_):
-        print(f"{col}: {imp:.4f}")
-
     importances = rf_model.feature_importances_
     feature_imp_df = pd.DataFrame({'Feature': feat_train.columns, 'Gini Importance': importances}).sort_values(
         'Gini Importance', ascending=False)
@@ -286,10 +295,13 @@ def neural_network_mod(train_df, test_df, target_col, drop_cols=None):
 
     # Initialize Neural Network model
     nn_model = MLPClassifier(
-                hidden_layer_sizes=(100,),
+                hidden_layer_sizes=(32,),
                 activation='relu',
                 solver='adam',
-                max_iter=200,
+                alpha= 0.05,
+                learning_rate='constant',
+                early_stopping=True,
+                max_iter=1000,
                 random_state=42
                 )
 
