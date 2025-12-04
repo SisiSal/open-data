@@ -2,7 +2,7 @@ import os
 import json
 import pandas as pd
 import numpy as np
-from Code.utils.geo_feats import calculate_distance_coordinates
+from utils.geo_feats import calculate_distance_coordinates
 
 def add_pass_type(df):
     '''
@@ -177,6 +177,8 @@ def drop_predef_cols(df):
     cols_to_keep = cols_to_keep = [
         'match_id',
         'goal',
+        'shot_statsbomb_xg',
+        'id',
         'under_pressure',
         'shot_first_time',
         'shot_technique_name',

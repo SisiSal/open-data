@@ -2,10 +2,11 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 def generate_heatmap(df):
-    corr_matrix = df.corr()
+    heatmap_df = df.drop(['id', 'shot_statsbomb_xg'], axis=1)
+    corr_matrix = heatmap_df.corr()
     target_corr = corr_matrix['goal'].abs().sort_values(ascending=False)
     top_features = target_corr.head(15).index
-    filtered_corr = df[top_features].corr()
+    filtered_corr = heatmap_df[top_features].corr()
     plt.figure(figsize=(12, 10))
     sns.heatmap(filtered_corr,
                 annot=True,

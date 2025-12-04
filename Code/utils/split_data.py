@@ -20,9 +20,11 @@ def split_data(df):
     return X_train, X_test, y_train, y_test
 
 def standardize_data(X_train, X_test):
+    COLUMNS_TO_EXCLUDE = ['id', 'shot_statsbomb_xg']
     cols_to_scale = X_train.loc[:, (X_train.nunique() > 2)].columns.tolist()
     X_train_numeric = X_train[cols_to_scale].select_dtypes(include=['number'])
     cols_to_scale = X_train_numeric.columns.tolist()
+    cols_to_scale = [col for col in cols_to_scale if col not in COLUMNS_TO_EXCLUDE]
     scaler = StandardScaler()
     scaler.fit(X_train[cols_to_scale])
     X_train_scaled = X_train.copy()

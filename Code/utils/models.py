@@ -2,7 +2,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (
     confusion_matrix, classification_report, roc_auc_score,
     roc_curve, precision_recall_curve, accuracy_score, precision_score,
-    recall_score, f1_score, balanced_accuracy_score
+    recall_score, f1_score, balanced_accuracy_score, log_loss, brier_score_loss
 )
 import matplotlib.pyplot as plt
 import numpy as np
@@ -177,7 +177,7 @@ def random_forest_mod(train_df, test_df, target_col, drop_cols=None):
     # Get predicted classes
     preds_test = model.predict(feat_test)
 
-    evaluate_model(targ_train, targ_test, preds_test, train_df["lr_xG"], test_df["lr_xG"])
+    evaluate_model(targ_train, targ_test, preds_test, train_df["xG"], test_df["xG"])
 
     return model, train_df, test_df
 
@@ -228,7 +228,7 @@ def xgboost_mod(train_df, test_df, target_col, drop_cols=None):
     # Get predicted classes
     preds_test = model.predict(feat_test)
 
-    evaluate_model(targ_train, targ_test, preds_test, train_df["lr_xG"], test_df["lr_xG"])
+    evaluate_model(targ_train, targ_test, preds_test, train_df["xG"], test_df["xG"])
 
     return model, train_df, test_df
 
@@ -278,7 +278,7 @@ def neural_network_mod(train_df, test_df, target_col, drop_cols=None):
     # Get predicted classes
     preds_test = model.predict(feat_test)
 
-    evaluate_model(targ_train, targ_test, preds_test, train_df["lr_xG"], test_df["lr_xG"])
+    evaluate_model(targ_train, targ_test, preds_test, train_df["xG"], test_df["xG"])
 
     return model, train_df, test_df
 
@@ -322,6 +322,19 @@ def naive_bayes_mod(train_df, test_df, target_col, drop_cols=None):
     # Get predicted classes
     preds_test = model.predict(feat_test)
 
-    evaluate_model(targ_train, targ_test, preds_test, train_df["lr_xG"], test_df["lr_xG"])
+    evaluate_model(targ_train, targ_test, preds_test, train_df["xG"], test_df["xG"])
 
     return model, train_df, test_df
+
+def evaluate_statsbomb(df, target_col='goal', pred_col='shot_statsbomb_xg'):
+    Y_true = df[target_col].astype(int)
+    P_pred = df[pred_col].astype(float)
+    roc_auc = roc_auc_score(Y_true, P_pred)
+    log_loss_score = log_loss(Y_true, P_pred)
+    brier = brier_score_loss(Y_true, P_pred)    
+    print('STATSBOMB XG METRICS')
+    print(f"Test ROC-AUC:   {roc_auc:.4f}")
+    print(f"Test log loss:   {log_loss_score:.4f}")
+    print(f"Test brier score:   {brier:.4f}")
+    print("\n" + "-" * 72 + "\n")
+    return {'roc_auc': roc_auc, 'log_loss': log_loss_score}

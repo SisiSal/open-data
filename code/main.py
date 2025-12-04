@@ -1,13 +1,13 @@
 import ast
 import pandas as pd
 import numpy as np
-import Code.utils.contextual_feats as cf
-import Code.utils.geo_feats as gf
-import Code.utils.data_cleaning as dc
-import Code.utils.fig_generation as fg
-import Code.utils.split_data as sd
-import Code.utils.grid_search as gs
-import Code.utils.models as mod
+import utils.contextual_feats as cf
+import utils.geo_feats as gf
+import utils.data_cleaning as dc
+import utils.fig_generation as fg
+import utils.split_data as sd
+import utils.grid_search as gs
+import utils.models as mod
 import importlib
 importlib.reload(gf)
 importlib.reload(cf)
@@ -19,6 +19,12 @@ importlib.reload(mod)
 
 
 ### Data Preprocessing
+
+
+#print('statsbomb evaluation...')
+#eval_df = pd.read_csv('processed_events.csv')
+#eval_X_train, eval_X_test, eval_y_train, eval_y_test = sd.split_data(eval_df)
+#mod.evaluate_statsbomb(eval_X_test)
 
 print('Starting filtering files...')
 df = dc.filter_rows()
@@ -93,7 +99,7 @@ print('Finished.')
 
 
 print('Calculating VIF...')
-X_numeric = df.drop(columns=['goal','match_id'], axis=1)
+X_numeric = df.drop(columns=['goal','match_id','shot_statsbomb_xg', 'id'], axis=1)
 vif_table = sd.calculate_vif(X_numeric)
 print(vif_table.sort_values("VIF", ascending=False))
 X_numeric.drop(['dist_to_post','shot_technique_name_Normal','goal_keeper_angle','shot_body_part_name_Right Foot'], axis=1,inplace=True)
@@ -128,8 +134,8 @@ test_df = X_test_scaled.copy()
 test_df['goal'] = y_test
 
 print('Apply Logistic Regression...')
-lr_model, train_df, test_df = mod.log_reg_mod(train_df, test_df, "goal")
-
-
+lr_model, train_df, test_df = mod.log_reg_mod(train_df, test_df, "goal", ['id', 'shot_statsbomb_xg'])
+print('Apply xg Regression...')
+xgb_model, train_df, test_df = mod.xgboost_mod(train_df, test_df, "goal", ['lr_xG', 'id', 'shot_statsbomb_xg'])
 
 #df_test = df.copy()
