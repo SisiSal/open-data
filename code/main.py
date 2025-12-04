@@ -97,12 +97,15 @@ X_train, X_test, y_train, y_test = sd.split_data(df)
 X_train_scaled, X_test_scaled, scaler = sd.standardize_data(X_train, X_test)
 print('Finished.')
 
-
+print(df.columns)
 print('Calculating VIF...')
 X_numeric = df.drop(columns=['goal','match_id','shot_statsbomb_xg', 'id'], axis=1)
+X_numeric = df[['duration_buildup_shot', 'distance_buildup_shot', 'time_on_field', 
+                'dist_to_post', 'angle_to_post', 'player_in_between',
+                'goal_keeper_angle', 'dist_goal_keeper', 'dist_shot_keeper']]
 vif_table = sd.calculate_vif(X_numeric)
 print(vif_table.sort_values("VIF", ascending=False))
-X_numeric.drop(['dist_to_post','shot_technique_name_Normal','goal_keeper_angle','shot_body_part_name_Right Foot'], axis=1,inplace=True)
+X_numeric.drop(['dist_to_post','goal_keeper_angle'], axis=1,inplace=True)
 vif_table = sd.calculate_vif(X_numeric)
 print(vif_table.sort_values("VIF", ascending=False))
 print('Finished.')
@@ -115,10 +118,10 @@ print('Best Logistic Regression Params:', best_log_params)
 #output: Best Logistic Regression Params: {'C': np.float64(10000.0), 'penalty': 'l2', 'solver': 'lbfgs'}
 best_rf_params = gs.tune_random_forest(X_train_scaled, y_train)
 print('Best Random Forest Params:', best_rf_params)
-#output:
+#output: Best Random Forest Params: {'criterion': 'entropy', 'max_depth': 15, 'min_samples_split': 7, 'n_estimators': 500}
 best_gb_params = gs.tune_xg_boost(X_train_scaled, y_train)
 print('Best XGBoost Params:', best_gb_params)
-#output:
+#output: Best XGBoost Params: {'subsample': 1.0, 'n_estimators': 400, 'min_child_weight': 1, 'max_depth': 4, 'learning_rate': 0.05, 'gamma': 0.1, 'colsample_bytree': 0.7}
 best_nn_params = gs.tune_neural_network(X_train_scaled, y_train)
 print('Best Neural Network Params:', best_nn_params)
 #output:
@@ -134,8 +137,11 @@ test_df = X_test_scaled.copy()
 test_df['goal'] = y_test
 
 print('Apply Logistic Regression...')
-lr_model, train_df, test_df = mod.log_reg_mod(train_df, test_df, "goal", ['id', 'shot_statsbomb_xg'])
-print('Apply xg Regression...')
-xgb_model, train_df, test_df = mod.xgboost_mod(train_df, test_df, "goal", ['lr_xG', 'id', 'shot_statsbomb_xg'])
+lr_model, lr_train_df, lr_test_df = mod.log_reg_mod(train_df, test_df, "goal")
+print('Apply Random Forest...')
+rf_model, rf_train_df, rf_test_df = mod.random_forest_mod(train_df, test_df, "goal")
+print('Apply XGBoost...')
+gb_model, gb_train_df, gb_test_df = mod.xgboost_mod(train_df, test_df, "goal")
+
 
 #df_test = df.copy()

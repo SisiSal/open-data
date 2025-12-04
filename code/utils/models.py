@@ -122,16 +122,18 @@ def log_reg_mod(train_df, test_df, target_col, drop_cols=None):
     lr_model.fit(feat_train, targ_train)
 
     # xG Predictions
-    train_df["lr_xG"] = lr_model.predict_proba(feat_train)[:, 1]
-    test_df["lr_xG"]  = lr_model.predict_proba(feat_test)[:, 1]
+    lr_train_df = train_df.copy()
+    lr_test_df = test_df.copy()
+    lr_train_df["lr_xG"] = lr_model.predict_proba(feat_train)[:, 1]
+    lr_test_df["lr_xG"]  = lr_model.predict_proba(feat_test)[:, 1]
     
     # Get predicted classes
     preds_test = lr_model.predict(feat_test)
 
 
-    evaluate_model(targ_train, targ_test, preds_test, train_df["lr_xG"], test_df["lr_xG"])
+    evaluate_model(targ_train, targ_test, preds_test, lr_train_df["lr_xG"], lr_test_df["lr_xG"])
 
-    return lr_model, train_df, test_df
+    return lr_model, lr_train_df, lr_test_df
 
 #Random Forest Model
 from sklearn.ensemble import RandomForestClassifier
@@ -161,25 +163,29 @@ def random_forest_mod(train_df, test_df, target_col, drop_cols=None):
     targ_test = test_df[target_col]
 
     # Initialize Random Forest model
-    model = RandomForestClassifier(
-                n_estimators=100,
-                max_depth=10,
-                random_state=42
+    rf_model = RandomForestClassifier(
+                n_estimators=500,
+                max_depth=15,
+                random_state=42,
+                criterion='entropy',
+                min_samples_split=7
                 )
 
     # Fit model
-    model.fit(feat_train, targ_train)
+    rf_model.fit(feat_train, targ_train)
 
     # xG Predictions
-    train_df["xG"] = model.predict_proba(feat_train)[:, 1]
-    test_df["xG"]  = model.predict_proba(feat_test)[:, 1]
+    rf_train_df = train_df.copy()
+    rf_test_df = test_df.copy()
+    rf_train_df["rf_xG"] = rf_model.predict_proba(feat_train)[:, 1]
+    rf_test_df["rf_xG"]  = rf_model.predict_proba(feat_test)[:, 1]
     
     # Get predicted classes
-    preds_test = model.predict(feat_test)
+    preds_test = rf_model.predict(feat_test)
 
-    evaluate_model(targ_train, targ_test, preds_test, train_df["xG"], test_df["xG"])
+    evaluate_model(targ_train, targ_test, preds_test, rf_train_df["rf_xG"], rf_test_df["rf_xG"])
 
-    return model, train_df, test_df
+    return rf_model, rf_train_df, rf_test_df
 
 #XGBoost Model
 import xgboost as xgb
@@ -209,28 +215,34 @@ def xgboost_mod(train_df, test_df, target_col, drop_cols=None):
     targ_test = test_df[target_col]
 
     # Initialize XGBoost model
-    model = xgb.XGBClassifier(
-                n_estimators=100,
-                max_depth=6,
-                learning_rate=0.1,
+    gb_model = xgb.XGBClassifier(
+                n_estimators=400,
+                max_depth=4,
+                learning_rate=0.05,
                 use_label_encoder=False,
                 eval_metric='logloss',
-                random_state=42
+                random_state=42,
+                min_child_weight=1,
+                gamma=0.1,
+                colsample_bytree=1,
+                subsample=1.0
                 )
 
     # Fit model
-    model.fit(feat_train, targ_train)
+    gb_model.fit(feat_train, targ_train)
 
     # xG Predictions
-    train_df["xG"] = model.predict_proba(feat_train)[:, 1]
-    test_df["xG"]  = model.predict_proba(feat_test)[:, 1]
+    gb_train_df = train_df.copy()
+    gb_test_df = test_df.copy()
+    gb_train_df["gb_xG"] = gb_model.predict_proba(feat_train)[:, 1]
+    gb_test_df["gb_xG"]  = gb_model.predict_proba(feat_test)[:, 1]
     
     # Get predicted classes
-    preds_test = model.predict(feat_test)
+    preds_test = gb_model.predict(feat_test)
 
-    evaluate_model(targ_train, targ_test, preds_test, train_df["xG"], test_df["xG"])
+    evaluate_model(targ_train, targ_test, preds_test, gb_train_df["gb_xG"], gb_test_df["gb_xG"])
 
-    return model, train_df, test_df
+    return gb_model, gb_train_df, gb_test_df
 
 #Neural Network Model
 from sklearn.neural_network import MLPClassifier
@@ -260,7 +272,7 @@ def neural_network_mod(train_df, test_df, target_col, drop_cols=None):
     targ_test = test_df[target_col]
 
     # Initialize Neural Network model
-    model = MLPClassifier(
+    nn_model = MLPClassifier(
                 hidden_layer_sizes=(100,),
                 activation='relu',
                 solver='adam',
@@ -269,18 +281,20 @@ def neural_network_mod(train_df, test_df, target_col, drop_cols=None):
                 )
 
     # Fit model
-    model.fit(feat_train, targ_train)
+    nn_model.fit(feat_train, targ_train)
 
     # xG Predictions
-    train_df["xG"] = model.predict_proba(feat_train)[:, 1]
-    test_df["xG"]  = model.predict_proba(feat_test)[:, 1]
+    nn_train_df = train_df.copy()
+    nn_test_df = test_df.copy()
+    nn_train_df["nn_xG"] = nn_model.predict_proba(feat_train)[:, 1]
+    nn_test_df["nn_xG"]  = nn_model.predict_proba(feat_test)[:, 1]
     
     # Get predicted classes
-    preds_test = model.predict(feat_test)
+    preds_test = nn_model.predict(feat_test)
 
-    evaluate_model(targ_train, targ_test, preds_test, train_df["xG"], test_df["xG"])
+    evaluate_model(targ_train, targ_test, preds_test, nn_train_df["nn_xG"], nn_test_df["nn_xG"])
 
-    return model, train_df, test_df
+    return nn_model, nn_train_df, nn_test_df
 
 #Naive Bayes Model
 from sklearn.naive_bayes import GaussianNB
@@ -310,21 +324,23 @@ def naive_bayes_mod(train_df, test_df, target_col, drop_cols=None):
     targ_test = test_df[target_col]
 
     # Initialize Naive Bayes model
-    model = GaussianNB()
+    nb_model = GaussianNB()
 
     # Fit model
-    model.fit(feat_train, targ_train)
+    nb_model.fit(feat_train, targ_train)
 
     # xG Predictions
-    train_df["xG"] = model.predict_proba(feat_train)[:, 1]
-    test_df["xG"]  = model.predict_proba(feat_test)[:, 1]
+    nb_train_df = train_df.copy()
+    nb_test_df = test_df.copy()
+    nb_train_df["nb_xG"] = nb_model.predict_proba(feat_train)[:, 1]
+    nb_test_df["nb_xG"]  = nb_model.predict_proba(feat_test)[:, 1]
     
     # Get predicted classes
-    preds_test = model.predict(feat_test)
+    preds_test = nb_model.predict(feat_test)
 
-    evaluate_model(targ_train, targ_test, preds_test, train_df["xG"], test_df["xG"])
+    evaluate_model(targ_train, targ_test, preds_test, nb_train_df["nb_xG"], nb_test_df["nb_xG"])
 
-    return model, train_df, test_df
+    return nb_model, nb_train_df, nb_test_df
 
 def evaluate_statsbomb(df, target_col='goal', pred_col='shot_statsbomb_xg'):
     Y_true = df[target_col].astype(int)
@@ -338,3 +354,4 @@ def evaluate_statsbomb(df, target_col='goal', pred_col='shot_statsbomb_xg'):
     print(f"Test brier score:   {brier:.4f}")
     print("\n" + "-" * 72 + "\n")
     return {'roc_auc': roc_auc, 'log_loss': log_loss_score}
+    
