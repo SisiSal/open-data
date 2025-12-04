@@ -149,10 +149,11 @@ def tune_neural_network(x, y):
     ## make param grid
     param_grid = {
         'hidden_layer_sizes': [(64,32), (64,), (32,)],
-        'activation': ['tanh', 'relu'],
-        'solver': ['sgd', 'adam'],
+        'activation': ['relu'],
+        'solver': ['adam'],
         'alpha': [0.0001, 0.05],
         'learning_rate': ['constant','adaptive'],
+        'early_stopping': [True],
         'max_iter': [1000]
     }
 
