@@ -1,13 +1,13 @@
 import ast
 import pandas as pd
 import numpy as np
-import Code.utils.contextual_feats as cf
-import Code.utils.geo_feats as gf
-import Code.utils.data_cleaning as dc
-import Code.utils.fig_generation as fg
-import Code.utils.split_data as sd
-import Code.utils.grid_search as gs
-import Code.utils.models as mod
+import utils.contextual_feats as cf
+import utils.geo_feats as gf
+import utils.data_cleaning as dc
+import utils.fig_generation as fg
+import utils.split_data as sd
+import utils.grid_search as gs
+import utils.models as mod
 import importlib
 importlib.reload(gf)
 importlib.reload(cf)
@@ -19,6 +19,12 @@ importlib.reload(mod)
 
 
 ### Data Preprocessing
+
+
+#print('statsbomb evaluation...')
+#eval_df = pd.read_csv('processed_events.csv')
+#eval_X_train, eval_X_test, eval_y_train, eval_y_test = sd.split_data(eval_df)
+#mod.evaluate_statsbomb(eval_X_test)
 
 print('Starting filtering files...')
 df = dc.filter_rows()
@@ -93,6 +99,7 @@ print('Finished.')
 
 print(df.columns)
 print('Calculating VIF...')
+X_numeric = df.drop(columns=['goal','match_id','shot_statsbomb_xg', 'id'], axis=1)
 X_numeric = df[['duration_buildup_shot', 'distance_buildup_shot', 'time_on_field', 
                 'dist_to_post', 'angle_to_post', 'player_in_between',
                 'goal_keeper_angle', 'dist_goal_keeper', 'dist_shot_keeper']]
