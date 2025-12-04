@@ -118,9 +118,6 @@ print('Best XGBoost Params:', best_gb_params)
 best_nn_params = gs.tune_neural_network(X_train_scaled, y_train)
 print('Best Neural Network Params:', best_nn_params)
 #output:
-best_nb_params = gs.tune_naive_bayes(X_train_scaled, y_train)
-print('Best Naive Bayes Params:', best_nb_params)
-#output:
 print('Finished.')
 
 print('Add target variable back into scaled data...')
@@ -135,6 +132,9 @@ print('Apply Random Forest...')
 rf_model, rf_train_df, rf_test_df = mod.random_forest_mod(train_df, test_df, "goal")
 print('Apply XGBoost...')
 gb_model, gb_train_df, gb_test_df = mod.xgboost_mod(train_df, test_df, "goal")
+print('Apply Neural Network...')
+nn_model, nn_train_df, nn_test_df = mod.neural_network_mod(train_df, test_df, "goal")
+print('Finished.')
 
 
 #df_test = df.copy()

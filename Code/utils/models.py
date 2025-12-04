@@ -6,6 +6,8 @@ from sklearn.metrics import (
 )
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
+
 
 #Model Evaluation Metrics
 def evaluate_model(y_train_vec, y_test_vec, y_pred, proba_train, proba_test):
@@ -129,7 +131,10 @@ def log_reg_mod(train_df, test_df, target_col, drop_cols=None):
     
     # Get predicted classes
     preds_test = lr_model.predict(feat_test)
-
+    
+    feature_coef_df = pd.DataFrame({'Feature': feat_train.columns, 'Coefficient': lr_model.coef_[0]}).sort_values(
+        'Coefficient', ascending=False)
+    print(feature_coef_df)
 
     evaluate_model(targ_train, targ_test, preds_test, lr_train_df["lr_xG"], lr_test_df["lr_xG"])
 
@@ -182,6 +187,14 @@ def random_forest_mod(train_df, test_df, target_col, drop_cols=None):
     
     # Get predicted classes
     preds_test = rf_model.predict(feat_test)
+
+    for col, imp in zip(feat_train.columns, rf_model.feature_importances_):
+        print(f"{col}: {imp:.4f}")
+
+    importances = rf_model.feature_importances_
+    feature_imp_df = pd.DataFrame({'Feature': feat_train.columns, 'Gini Importance': importances}).sort_values(
+        'Gini Importance', ascending=False)
+    print(feature_imp_df)
 
     evaluate_model(targ_train, targ_test, preds_test, rf_train_df["rf_xG"], rf_test_df["rf_xG"])
 
@@ -295,49 +308,3 @@ def neural_network_mod(train_df, test_df, target_col, drop_cols=None):
     evaluate_model(targ_train, targ_test, preds_test, nn_train_df["nn_xG"], nn_test_df["nn_xG"])
 
     return nn_model, nn_train_df, nn_test_df
-
-#Naive Bayes Model
-from sklearn.naive_bayes import GaussianNB
-def naive_bayes_mod(train_df, test_df, target_col, drop_cols=None):
-    """
-    Fit a Gaussian Naive Bayes classifier and predict on test data.
-    
-    Parameters:
-        train_df (pd.DataFrame): Training dataset
-        test_df (pd.DataFrame): Test dataset
-        target_col (str): Name of the target variable (0/1)
-        drop_cols (list): Optional list of non-feature columns to exclude (e.g., IDs
-    Returns:
-        model (GaussianNB): Fitted Naive Bayes model
-    """
-    if drop_cols is None:
-        drop_cols = []
-
-    non_features = drop_cols + [target_col]
-
-    # Build feature list
-    features = [c for c in train_df.columns if c not in non_features]
-
-    feat_train = train_df[features]
-    targ_train = train_df[target_col]
-    feat_test = test_df[features]
-    targ_test = test_df[target_col]
-
-    # Initialize Naive Bayes model
-    nb_model = GaussianNB()
-
-    # Fit model
-    nb_model.fit(feat_train, targ_train)
-
-    # xG Predictions
-    nb_train_df = train_df.copy()
-    nb_test_df = test_df.copy()
-    nb_train_df["nb_xG"] = nb_model.predict_proba(feat_train)[:, 1]
-    nb_test_df["nb_xG"]  = nb_model.predict_proba(feat_test)[:, 1]
-    
-    # Get predicted classes
-    preds_test = nb_model.predict(feat_test)
-
-    evaluate_model(targ_train, targ_test, preds_test, nb_train_df["nb_xG"], nb_test_df["nb_xG"])
-
-    return nb_model, nb_train_df, nb_test_df

@@ -3,6 +3,7 @@ from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from xgboost import XGBClassifier
+from sklearn.neural_network import MLPClassifier
 
 def tune_log_model(x, y):
     """
@@ -143,58 +144,21 @@ def tune_neural_network(x, y):
         dict: containing parameter values
     """ 
     ## init Neural Network model
-    from sklearn.neural_network import MLPClassifier
     nn_model = MLPClassifier()
 
     ## make param grid
     param_grid = {
-        'hidden_layer_sizes': [(50,50,50), (50,100,50), (100,)],
+        'hidden_layer_sizes': [(64,32), (64,), (32,)],
         'activation': ['tanh', 'relu'],
         'solver': ['sgd', 'adam'],
         'alpha': [0.0001, 0.05],
         'learning_rate': ['constant','adaptive'],
+        'max_iter': [1000]
     }
 
     ## run grid search
     clf = GridSearchCV(
         estimator=nn_model,
-        param_grid=param_grid,
-        scoring="roc_auc",
-        n_jobs=-1,
-        cv=5,
-        verbose=1
-    )
-    best_clf = clf.fit(x, y)
-
-    ## best score
-    print("ROC-AUC :",best_clf.best_score_,"\nBest Estimator:", best_clf.best_estimator_)
-    print(f'Accuracy - : {best_clf.score(x,y):.3f}')
-
-    return best_clf.best_params_
-
-def tune_naive_bayes(x, y):
-    """
-    Function for performing hyperparameter 
-    tuning for naive bayes model.
-
-    Args:
-        x (numpy.ndarray): the feature value.
-        y (numpy.ndarray): the target value.
-    Returns:
-        dict: containing parameter values
-    """
-    ## init Naive Bayes model
-    from sklearn.naive_bayes import GaussianNB
-    nb_model = GaussianNB()
-
-    ## make param grid
-    param_grid = {
-        'var_smoothing': np.logspace(0,-9, num=100)
-    }
-
-    ## run grid search
-    clf = GridSearchCV(
-        estimator=nb_model,
         param_grid=param_grid,
         scoring="roc_auc",
         n_jobs=-1,
