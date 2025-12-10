@@ -1,13 +1,13 @@
 import ast
 import pandas as pd
 import numpy as np
-import Code.utils.contextual_feats as cf
-import Code.utils.geo_feats as gf
-import Code.utils.data_cleaning as dc
-import Code.utils.fig_generation as fg
-import Code.utils.split_data as sd
-import Code.utils.grid_search as gs
-import Code.utils.models as mod
+import utils.contextual_feats as cf
+import utils.geo_feats as gf
+import utils.data_cleaning as dc
+import utils.fig_generation as fg
+import utils.split_data as sd
+import utils.grid_search as gs
+import utils.models as mod
 import importlib
 importlib.reload(gf)
 importlib.reload(cf)
@@ -101,7 +101,7 @@ print('Finished.')
 print(df.columns)
 print('Calculating VIF...')
 X_numeric = df.drop(columns=['goal','match_id','shot_statsbomb_xg', 'id'], axis=1)
-X_numeric = df[['duration_buildup_shot', 'distance_buildup_shot', 'time_on_field', 
+X_numeric = df[['duration_buildup_shot', 'distance_buildup_shot', 'time_on_field',
                 'dist_to_post', 'angle_to_post', 'player_in_between',
                 'goal_keeper_angle', 'dist_goal_keeper', 'dist_shot_keeper']]
 vif_table = sd.calculate_vif(X_numeric)
@@ -113,20 +113,20 @@ print('Finished.')
 
 ### Modeling Time XD ###
 
-print('Tuning Models...')
-best_log_params = gs.tune_log_model(X_train_scaled, y_train)
-print('Best Logistic Regression Params:', best_log_params)
+#print('Tuning Models...')
+#best_log_params = gs.tune_log_model(X_train_scaled, y_train)
+#print('Best Logistic Regression Params:', best_log_params)
 #output: Best Logistic Regression Params: {'C': np.float64(10000.0), 'penalty': 'l2', 'solver': 'lbfgs'}
-best_rf_params = gs.tune_random_forest(X_train_scaled, y_train)
-print('Best Random Forest Params:', best_rf_params)
+#best_rf_params = gs.tune_random_forest(X_train_scaled, y_train)
+#print('Best Random Forest Params:', best_rf_params)
 #output: Best Random Forest Params: {'criterion': 'entropy', 'max_depth': 15, 'min_samples_split': 7, 'n_estimators': 500}
-best_gb_params = gs.tune_xg_boost(X_train_scaled, y_train)
-print('Best XGBoost Params:', best_gb_params)
+#best_gb_params = gs.tune_xg_boost(X_train_scaled, y_train)
+#print('Best XGBoost Params:', best_gb_params)
 #output: Best XGBoost Params: {'subsample': 1.0, 'n_estimators': 400, 'min_child_weight': 1, 'max_depth': 4, 'learning_rate': 0.05, 'gamma': 0.1, 'colsample_bytree': 0.7}
-best_nn_params = gs.tune_neural_network(X_train_scaled, y_train)
-print('Best Neural Network Params:', best_nn_params)
+#best_nn_params = gs.tune_neural_network(X_train_scaled, y_train)
+#print('Best Neural Network Params:', best_nn_params)
 #output:
-print('Finished.')
+#print('Finished.')
 
 print('Add target variable back into scaled data...')
 train_df = X_train_scaled.copy()
@@ -135,13 +135,13 @@ test_df = X_test_scaled.copy()
 test_df['goal'] = y_test
 
 print('Apply Logistic Regression...')
-lr_model, lr_train_df, lr_test_df = mod.log_reg_mod(train_df, test_df, "goal")
+lr_model, lr_train_df, lr_test_df = mod.log_reg_mod(train_df, test_df, ['goal','match_id','shot_statsbomb_xg', 'id'])
 print('Apply Random Forest...')
-rf_model, rf_train_df, rf_test_df = mod.random_forest_mod(train_df, test_df, "goal")
+rf_model, rf_train_df, rf_test_df = mod.random_forest_mod(train_df, test_df, ['goal','match_id','shot_statsbomb_xg', 'id'])
 print('Apply XGBoost...')
-gb_model, gb_train_df, gb_test_df = mod.xgboost_mod(train_df, test_df, "goal")
+gb_model, gb_train_df, gb_test_df = mod.xgboost_mod(train_df, test_df, ['goal','match_id','shot_statsbomb_xg', 'id'])
 print('Apply Neural Network...')
-nn_model, nn_train_df, nn_test_df = mod.neural_network_mod(train_df, test_df, "goal")
+nn_model, nn_train_df, nn_test_df = mod.neural_network_mod(train_df, test_df, ['goal','match_id','shot_statsbomb_xg', 'id'])
 print('Finished.')
 
 

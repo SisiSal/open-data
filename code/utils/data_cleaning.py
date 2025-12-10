@@ -215,7 +215,13 @@ def hot_encode_categorical_columns(df):
         'poss_team_match_state',
         'venue'
         ]
-    df = pd.get_dummies(df, columns=categorical_cols, drop_first=True)
+    drop_cols_encoded = [
+        'shot_body_part_name_Other',
+        'shot_technique_name_Normal',
+        'pass_type_Not Assisted',
+    ]
+    df = pd.get_dummies(df, columns=categorical_cols, drop_first=False)
     boolean_cols = df.select_dtypes(include=['bool']).columns
     df[boolean_cols] = df[boolean_cols].astype(int)
+    df.drop(drop_cols_encoded, axis=1, inplace=True)
     return df
