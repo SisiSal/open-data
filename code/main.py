@@ -135,13 +135,13 @@ test_df = X_test_scaled.copy()
 test_df['goal'] = y_test
 
 print('Apply Logistic Regression...')
-lr_model, lr_train_df, lr_test_df = mod.log_reg_mod(train_df, test_df, ['goal','match_id','shot_statsbomb_xg', 'id'])
+lr_model, lr_train_df, lr_test_df = mod.log_reg_mod(train_df, test_df, ['goal','shot_statsbomb_xg', 'id'])
 print('Apply Random Forest...')
-rf_model, rf_train_df, rf_test_df = mod.random_forest_mod(train_df, test_df, ['goal','match_id','shot_statsbomb_xg', 'id'])
+rf_model, rf_train_df, rf_test_df = mod.random_forest_mod(train_df, test_df, ['goal','shot_statsbomb_xg', 'id'])
 print('Apply XGBoost...')
-gb_model, gb_train_df, gb_test_df = mod.xgboost_mod(train_df, test_df, ['goal','match_id','shot_statsbomb_xg', 'id'])
+gb_model, gb_train_df, gb_test_df = mod.xgboost_mod(train_df, test_df, ['goal','shot_statsbomb_xg', 'id'])
 print('Apply Neural Network...')
-nn_model, nn_train_df, nn_test_df = mod.neural_network_mod(train_df, test_df, ['goal','match_id','shot_statsbomb_xg', 'id'])
+nn_model, nn_train_df, nn_test_df = mod.neural_network_mod(train_df, test_df, ['goal','shot_statsbomb_xg', 'id'])
 print('Finished.')
 
 
