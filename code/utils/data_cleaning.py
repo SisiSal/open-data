@@ -2,7 +2,7 @@ import os
 import json
 import pandas as pd
 import numpy as np
-from utils.geo_feats import calculate_distance_coordinates
+from Code.utils.geo_feats import calculate_distance_coordinates
 
 def add_pass_type(df):
     '''
@@ -219,6 +219,8 @@ def hot_encode_categorical_columns(df):
         'shot_body_part_name_Other',
         'shot_technique_name_Normal',
         'pass_type_Not Assisted',
+        'poss_team_match_state_draw',
+        'venue_away'
     ]
     df = pd.get_dummies(df, columns=categorical_cols, drop_first=False)
     boolean_cols = df.select_dtypes(include=['bool']).columns
