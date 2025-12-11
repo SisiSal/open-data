@@ -283,8 +283,9 @@ def xgboost_mod(train_df, test_df, target_col, drop_cols=None):
     explainer = shap.TreeExplainer(gb_model)
     shap_values = explainer.shap_values(feat_test)
     shap.summary_plot(shap_values, feat_test)
-    shap.summary_plot(shap_values, feat_test, plot_type="bar")    
-
+    shap.summary_plot(shap_values, feat_test, plot_type="bar", max_display=33)    
+    shap.dependence_plot("angle_to_post", shap_values, feat_test)
+    
     mpl.rcParams.update({
         'font.size': 8,
         'axes.titlesize': 9,
@@ -315,11 +316,16 @@ def xgboost_mod(train_df, test_df, target_col, drop_cols=None):
             shap_values,
             feat_test,
             ax=axes[i],
-            show=False,
-            interaction_index=None             
+            show=False           
         )
-        for label in axes[i].get_xticklabels():
-            label.set_fontsize(6)
+        # Find the colorbar attached to this axis
+        for cbar in fig.axes:
+            if cbar is not axes[i] and hasattr(cbar, "yaxis"):
+                cbar.yaxis.label.set_size(6)
+                for tick in cbar.get_yticklabels():
+                    tick.set_fontsize(5)
+                for label in axes[i].get_xticklabels():
+                    label.set_fontsize(6)
 
         for label in axes[i].get_yticklabels():
             label.set_fontsize(6)
