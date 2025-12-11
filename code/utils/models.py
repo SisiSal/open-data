@@ -282,10 +282,10 @@ def xgboost_mod(train_df, test_df, target_col, drop_cols=None):
     # SHAP Values
     explainer = shap.TreeExplainer(gb_model)
     shap_values = explainer.shap_values(feat_test)
-    shap.summary_plot(shap_values, feat_test)
+    shap.summary_plot(shap_values, feat_test, max_display=33)
     shap.summary_plot(shap_values, feat_test, plot_type="bar", max_display=33)    
     shap.dependence_plot("angle_to_post", shap_values, feat_test)
-    
+
     mpl.rcParams.update({
         'font.size': 8,
         'axes.titlesize': 9,
