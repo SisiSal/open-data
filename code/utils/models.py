@@ -8,6 +8,7 @@ from sklearn.metrics import (
     recall_score, f1_score, balanced_accuracy_score, log_loss, brier_score_loss
 )
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 import numpy as np
 import pandas as pd
 import shap
@@ -282,8 +283,57 @@ def xgboost_mod(train_df, test_df, target_col, drop_cols=None):
     explainer = shap.TreeExplainer(gb_model)
     shap_values = explainer.shap_values(feat_test)
     shap.summary_plot(shap_values, feat_test)
-    shap.summary_plot(shap_values, feat_test, plot_type="bar")
-    shap.dependence_plot(feat_test.columns[0], shap_values, feat_test)
+    shap.summary_plot(shap_values, feat_test, plot_type="bar")    
+
+    mpl.rcParams.update({
+        'font.size': 8,
+        'axes.titlesize': 9,
+        'axes.labelsize': 8,
+        'xtick.labelsize': 7,
+        'ytick.labelsize': 7
+    })
+
+    # features for dependence plots
+    features_to_plot = [
+        'angle_to_post',
+        'dist_shot_keeper',
+        'player_in_between',
+        'dist_to_post',
+        'shot_body_part_name_Head',
+        'dist_goal_keeper',
+        'poss_team_match_state_possession',
+        'shot_deflected',
+        'duration_buildup_shot'
+    ]
+
+    fig, axes = plt.subplots(3, 3, figsize=(20, 10))
+    axes = axes.ravel()
+
+    for i, feature in enumerate(features_to_plot):
+        shap.dependence_plot(
+            feature,
+            shap_values,
+            feat_test,
+            ax=axes[i],
+            show=False,
+            interaction_index=None             
+        )
+        for label in axes[i].get_xticklabels():
+            label.set_fontsize(6)
+
+        for label in axes[i].get_yticklabels():
+            label.set_fontsize(6)
+
+        axes[i].xaxis.label.set_size(7)
+        axes[i].yaxis.label.set_size(7)
+        axes[i].title.set_size(8)
+
+    # hide any unused subplots
+    for j in range(i+1, len(axes)):
+        axes[j].axis("off")
+
+    plt.tight_layout(pad=2.0)
+    plt.show()
 
     evaluate_model(targ_train, targ_test, preds_test, gb_train_df["gb_xG"], gb_test_df["gb_xG"])
 
