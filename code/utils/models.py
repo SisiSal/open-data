@@ -1,4 +1,7 @@
 from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+import xgboost as xgb
+from sklearn.neural_network import MLPClassifier
 from sklearn.metrics import (
     confusion_matrix, classification_report, roc_auc_score,
     roc_curve, precision_recall_curve, accuracy_score, precision_score,
@@ -7,7 +10,7 @@ from sklearn.metrics import (
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-
+import shap
 
 #Model Evaluation Metrics
 def evaluate_model(y_train_vec, y_test_vec, y_pred, proba_train, proba_test):
@@ -153,7 +156,6 @@ def log_reg_mod(train_df, test_df, target_col, drop_cols=None):
     return lr_model, lr_train_df, lr_test_df
 
 #Random Forest Model
-from sklearn.ensemble import RandomForestClassifier
 def random_forest_mod(train_df, test_df, target_col, drop_cols=None):
     """
     Fit a Random Forest classifier and predict on test data.
@@ -201,7 +203,7 @@ def random_forest_mod(train_df, test_df, target_col, drop_cols=None):
     preds_test = rf_model.predict(feat_test)
 
     importances = rf_model.feature_importances_
-    feature_imp_df = pd.DataFrame({'Feature': feat_train.columns, 'Gini Importance': importances}).sort_values(
+    feature_imp_df = pd.DataFrame({'Feature': feat_test.columns, 'Gini Importance': importances}).sort_values(
         'Gini Importance', ascending=False)
     print(feature_imp_df)
 
@@ -210,7 +212,6 @@ def random_forest_mod(train_df, test_df, target_col, drop_cols=None):
     return rf_model, rf_train_df, rf_test_df
 
 #XGBoost Model
-import xgboost as xgb
 def xgboost_mod(train_df, test_df, target_col, drop_cols=None):
     """
     Fit an XGBoost classifier and predict on test data.
@@ -238,17 +239,17 @@ def xgboost_mod(train_df, test_df, target_col, drop_cols=None):
 
     # Initialize XGBoost model
     gb_model = xgb.XGBClassifier(
-                n_estimators=400,
-                max_depth=4,
-                learning_rate=0.05,
-                use_label_encoder=False,
-                eval_metric='logloss',
-                random_state=42,
-                min_child_weight=1,
-                gamma=0.1,
-                colsample_bytree=1,
-                subsample=1.0
-                )
+            n_estimators=300,
+            max_depth=4,
+            learning_rate=0.05,
+            use_label_encoder=False,
+            eval_metric='logloss',
+            random_state=42,
+            min_child_weight=3,
+            gamma=0,
+            colsample_bytree=0.5,
+            subsample=0.8
+            )
 
     # Fit model
     gb_model.fit(feat_train, targ_train)
@@ -262,12 +263,24 @@ def xgboost_mod(train_df, test_df, target_col, drop_cols=None):
     # Get predicted classes
     preds_test = gb_model.predict(feat_test)
 
+    # Feature Importance
+    importances = gb_model.feature_importances_
+    feature_imp_df = pd.DataFrame({'Feature': feat_test.columns, 'Feature Importance': importances}).sort_values(
+        'Feature Importance', ascending=False)
+    print(feature_imp_df)
+
+    # SHAP Values
+    explainer = shap.TreeExplainer(gb_model)
+    shap_values = explainer.shap_values(feat_test)
+    shap.summary_plot(shap_values, feat_test)
+    shap.summary_plot(shap_values, feat_test, plot_type="bar")
+    shap.dependence_plot(feat_test.columns[0], shap_values, feat_test)
+
     evaluate_model(targ_train, targ_test, preds_test, gb_train_df["gb_xG"], gb_test_df["gb_xG"])
 
     return gb_model, gb_train_df, gb_test_df
 
 #Neural Network Model
-from sklearn.neural_network import MLPClassifier
 def neural_network_mod(train_df, test_df, target_col, drop_cols=None):
     """
     Fit a Neural Network (MLPClassifier) and predict on test data.
@@ -295,15 +308,15 @@ def neural_network_mod(train_df, test_df, target_col, drop_cols=None):
 
     # Initialize Neural Network model
     nn_model = MLPClassifier(
-                hidden_layer_sizes=(32,),
-                activation='relu',
-                solver='adam',
-                alpha= 0.05,
-                learning_rate='constant',
-                early_stopping=True,
-                max_iter=1000,
-                random_state=42
-                )
+            hidden_layer_sizes=(64, 32),
+            activation='relu',
+            solver='adam',
+            alpha= 0.05,
+            learning_rate='constant',
+            early_stopping=True,
+            max_iter=1000,
+            random_state=42
+            )
 
     # Fit model
     nn_model.fit(feat_train, targ_train)

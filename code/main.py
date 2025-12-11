@@ -124,10 +124,10 @@ print('Best Random Forest Params:', best_rf_params)
 #output: Best Random Forest Params: {'criterion': 'entropy', 'max_depth': 15, 'min_samples_split': 7, 'n_estimators': 500}
 best_gb_params = gs.tune_xg_boost(X_train_scaled_tuning, y_train)
 print('Best XGBoost Params:', best_gb_params)
-#output: Best XGBoost Params: {'subsample': 1.0, 'n_estimators': 400, 'min_child_weight': 1, 'max_depth': 4, 'learning_rate': 0.05, 'gamma': 0.1, 'colsample_bytree': 0.7}
+#output: {'subsample': 0.8, 'n_estimators': 300, 'min_child_weight': 3, 'max_depth': 4, 'learning_rate': 0.05, 'gamma': 0, 'colsample_bytree': 0.5}
 best_nn_params = gs.tune_neural_network(X_train_scaled_tuning, y_train)
 print('Best Neural Network Params:', best_nn_params)
-#output:
+#output: Best Neural Network Params: {'activation': 'relu', 'alpha': 0.05, 'early_stopping': True, 'hidden_layer_sizes': (64, 32), 'learning_rate': 'constant', 'max_iter': 1000, 'solver': 'adam'}
 print('Finished.')
 
 print('Add target variable back into scaled data...')
