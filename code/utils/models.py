@@ -269,6 +269,15 @@ def xgboost_mod(train_df, test_df, target_col, drop_cols=None):
         'Feature Importance', ascending=False)
     print(feature_imp_df)
 
+    plt.figure(figsize=(9, 8))
+    plt.barh(
+        feature_imp_df["Feature"],
+        feature_imp_df["Feature Importance"]
+    )
+    plt.xlabel("XGBoost Feature Importance")
+    plt.gca().invert_yaxis()  # so highest importance appears at top
+    plt.show()
+
     # SHAP Values
     explainer = shap.TreeExplainer(gb_model)
     shap_values = explainer.shap_values(feat_test)
