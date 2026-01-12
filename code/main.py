@@ -145,6 +145,3 @@ gb_model, gb_train_df, gb_test_df = mod.xgboost_mod(train_df, test_df, 'goal', [
 print('Apply Neural Network...')
 nn_model, nn_train_df, nn_test_df = mod.neural_network_mod(train_df, test_df, 'goal', ['shot_statsbomb_xg', 'id'])
 print('Finished.')
-
-
-#df_test = df.copy()

@@ -16,20 +16,25 @@ def calculate_period_time(period, event_time):
 def calculate_player_on_pitch(events_df):
     start_time = time.time()
 
-    for index, event in events_df.iterrows():
-        #Get event's timestamp, and convert it in hh:mm:ss
-        event_time = pd.to_timedelta(event['timestamp'])
-        event_time = calculate_period_time(event['period'], event_time)
-
+    for match_id in events_df['match_id'].unique():
         #Lineups containt info about player (when they entered the pitch)
-        lineup = sb.lineups(event['match_id'])
-        team = event['team']
-        lineup = lineup[team]
+        lineup = sb.lineups(match_id=match_id)
 
-        #Find player from event in lineup, and get its first time in the pitch
-        player_init_time = lineup.loc[lineup['player_id'] == event['player_id'], 'positions'].values[0][0]['from']
-        player_init_time = pd.to_timedelta('00:' + player_init_time)
-        events_df.at[index, 'time_on_field'] = event_time - player_init_time
+        match_events = events_df[events_df['match_id'] == match_id]
+
+        for index, event in match_events.iterrows():
+            #Get event's timestamp, and convert it in hh:mm:ss
+            event_time = pd.to_timedelta(event['timestamp'])
+            event_time = calculate_period_time(event['period'], event_time)
+            
+            #Get lineup for the team of the event
+            team = event['team']
+            team_lineup = lineup[team]
+
+            #Find player from event in lineup, and get its first time in the pitch
+            player_init_time = team_lineup.loc[team_lineup['player_id'] == event['player_id'], 'positions'].values[0][0]['from']
+            player_init_time = pd.to_timedelta('00:' + player_init_time)
+            events_df.at[index, 'time_on_field'] = event_time - player_init_time
 
     end_time = time.time()
     print(f'Total time: {end_time - start_time}')
