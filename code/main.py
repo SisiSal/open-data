@@ -69,7 +69,7 @@ df = gf.add_freeze_frame_vars(df)
 print('Finished.')
 
 print('Adding goal column...')
-df['goal'] = np.where(df['shot_outcome_name'] == 'Goal', 1, 0)
+df['goal'] = np.where(df['shot_outcome'] == 'Goal', 1, 0)
 print('Finished.')
 
 print('Cleaning rows and cols...')

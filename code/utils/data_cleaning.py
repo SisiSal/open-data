@@ -1,5 +1,6 @@
 import os
 import json
+from statsbombpy import sb
 import pandas as pd
 import numpy as np
 from Code.utils.geo_feats import calculate_distance_coordinates
@@ -14,7 +15,7 @@ def add_pass_type(df):
     df["pass_type"] = "Not Assisted"
     
     # create a dataframe of only passes
-    pass_df = df[df["type_name"] == "Pass"].copy().set_index("id")
+    pass_df = df[df["type"] == "Pass"].copy().set_index("id")
     
     # shots where shot_key_pass_id is not null
     shot_with_assist = df[df["shot_key_pass_id"].notna()]
@@ -32,7 +33,7 @@ def add_pass_type(df):
         pass_type = ""
 
         # Through ball
-        if temp_data.get("pass_technique_name") == "Through Ball":
+        if temp_data.get("pass_technique") == "Through Ball":
             pass_type = "Through Ball"
 
         # Cut back
@@ -45,7 +46,7 @@ def add_pass_type(df):
 
         else:
             # Free kicks / corners
-            ptype = temp_data.get("pass_type_name")
+            ptype = temp_data.get("pass_type")
             if ptype == "Corner":
                 pass_type = "From Corner"
             elif ptype == "Free Kick":
@@ -70,7 +71,7 @@ def add_duration_buildup_shot(df):
     df["duration_buildup_shot"] = np.nan
 
     # if there are no shots, stop early
-    if "Shot" not in df["type_name"].values:
+    if "Shot" not in df["type"].values:
         return
 
     # group by both possession ID and period so possession doesn't cross periods
@@ -83,7 +84,7 @@ def add_duration_buildup_shot(df):
     )
 
     # loop through shot events only
-    shot_rows = df[df["type_name"] == "Shot"]
+    shot_rows = df[df["type"] == "Shot"]
 
     for idx, row in shot_rows.iterrows():
         key = row["possession_key"]
@@ -108,17 +109,17 @@ def add_distance_buildup_shot(df):
 
     df["distance_buildup_shot"] = np.nan
 
-    shot_rows = df[df["type_name"] == "Shot"]
+    shot_rows = df[df["type"] == "Shot"]
 
     # process each shot
     for idx, shot in shot_rows.iterrows():
 
         key = shot["possession_key"]
-        shooting_team = shot["team_name"]
+        shooting_team = shot["team"]
 
         poss_df = df[
             (df["possession_key"] == key) &
-            (df["team_name"] == shooting_team)
+            (df["team"] == shooting_team)
         ].sort_values("event_time")
 
         # keep only events *before* the shot
@@ -141,31 +142,38 @@ def add_distance_buildup_shot(df):
 
     return df
 
-path = "data/events"
-all_events = []
-
 def filter_rows():
-    for filename in os.listdir(path):
-        if filename.endswith(".json"):
-            filepath = os.path.join(path, filename)
-            with open(filepath, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-            df = pd.json_normalize(data, sep='_')
-            add_pass_type(df)
-            add_duration_buildup_shot(df)
-            add_distance_buildup_shot(df)
-            df_shots = df[
-                (df['shot_type_name'] == 'Open Play') &
-                (df['shot_type_name'].notna())].copy()
-            if not df_shots.empty:
-                df_shots['match_id'] = filename.replace('.json', '')
-                all_events.append(df_shots)
+    competitions = sb.competitions()
+
+    all_match_ids = []
+
+    for _, row in competitions.iterrows():
+        matches = sb.matches(
+            competition_id=row['competition_id'],
+            season_id=row['season_id']
+        )
+        all_match_ids.extend(matches['match_id'].tolist())
+    
+    all_events = []
+
+    for match_id in all_match_ids:
+        df = sb.events(match_id=match_id, flatten_attrs=True)
+        add_pass_type(df)
+        add_duration_buildup_shot(df)
+        add_distance_buildup_shot(df)
+        df_shots = df[
+            (df['shot_type'] == 'Open Play') &
+            (df['shot_type'].notna())].copy()
+        if not df_shots.empty:
+            df_shots['match_id'] = match_id
+            all_events.append(df_shots)
 
     events_df = pd.concat(all_events, ignore_index=True)
     print(events_df.shape)
     print(events_df.head())
     events_df.to_csv('events_df.csv', index=False)
     return events_df
+
 
 def remove_invalid_time(df):
     df['time_on_field'] = pd.to_timedelta(df['time_on_field'], errors='coerce')
@@ -181,8 +189,8 @@ def drop_predef_cols(df):
         'id',
         'under_pressure',
         'shot_first_time',
-        'shot_technique_name',
-        'shot_body_part_name',
+        'shot_technique',
+        'shot_body_part',
         'shot_aerial_won',
         'pass_type',
         'duration_buildup_shot',
@@ -209,15 +217,15 @@ def fill_predef_cols(df):
 
 def hot_encode_categorical_columns(df):
     categorical_cols = [
-        'shot_technique_name', 
-        'shot_body_part_name', 
+        'shot_technique', 
+        'shot_body_part', 
         'pass_type',
         'poss_team_match_state',
         'venue'
         ]
     drop_cols_encoded = [
-        'shot_body_part_name_Other',
-        'shot_technique_name_Normal',
+        'shot_body_part_Other',
+        'shot_technique_Normal',
         'pass_type_Not Assisted',
         'poss_team_match_state_draw',
         'venue_away'

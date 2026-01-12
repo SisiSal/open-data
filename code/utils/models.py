@@ -300,7 +300,7 @@ def xgboost_mod(train_df, test_df, target_col, drop_cols=None):
         'dist_shot_keeper',
         'player_in_between',
         'dist_to_post',
-        'shot_body_part_name_Head',
+        'shot_body_part_Head',
         'dist_goal_keeper',
         'poss_team_match_state_possession',
         'shot_deflected',

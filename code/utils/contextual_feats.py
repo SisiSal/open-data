@@ -16,15 +16,20 @@ def calculate_period_time(period, event_time):
 def calculate_player_on_pitch(events_df):
     start_time = time.time()
 
+    lineup_cache = {}
+
+    for match_id in events_df['match_id'].unique():
+        lineup_cache[match_id] = sb.lineups(match_id)
+
     for index, event in events_df.iterrows():
         #Get event's timestamp, and convert it in hh:mm:ss
         event_time = pd.to_timedelta(event['timestamp'])
         event_time = calculate_period_time(event['period'], event_time)
 
         #Lineups containt info about player (when they entered the pitch)
-        lineup = sb.lineups(event['match_id'])
-        team_name = event['team_name']
-        lineup = lineup[team_name]
+        lineup = lineup_cache[event['match_id']]
+        team = event['team']
+        lineup = lineup[team]
 
         #Find player from event in lineup, and get its first time in the pitch
         player_init_time = lineup.loc[lineup['player_id'] == event['player_id'], 'positions'].values[0][0]['from']
@@ -37,7 +42,7 @@ def calculate_player_on_pitch(events_df):
     return events_df
 
 def calculate_score_per_match(match_df):
-    teams = match_df['team_name'].unique()
+    teams = match_df['team'].unique()
     team_A = teams[0]
     if len(teams) == 2:
         team_B = teams[1]
@@ -48,9 +53,9 @@ def calculate_score_per_match(match_df):
             team_B = away_name
         else:
             team_B = home_name
-    is_goal = match_df['shot_outcome_name'] == 'Goal'
-    goals_team_A = is_goal & (match_df['team_name'] == team_A)
-    goals_team_B = is_goal & (match_df['team_name'] == team_B)
+    is_goal = match_df['shot_outcome'] == 'Goal'
+    goals_team_A = is_goal & (match_df['team'] == team_A)
+    goals_team_B = is_goal & (match_df['team'] == team_B)
     score_A = goals_team_A.cumsum()
     score_B = goals_team_B.cumsum()
     match_df[f'{team_A}'] = score_A.shift(1).fillna(0).astype(int)
@@ -77,7 +82,7 @@ def add_poss_team_match_state(df):
     df['poss_team_match_state'] = 'opponent'  # default
 
     df.loc[df['winning_team'] == 'draw', 'poss_team_match_state'] = 'draw'
-    df.loc[df['winning_team'] == df['possession_team_name'], 'poss_team_match_state'] = 'possession'
+    df.loc[df['winning_team'] == df['possession_team'], 'poss_team_match_state'] = 'possession'
 
     return df
 
@@ -98,7 +103,7 @@ def define_home_away_teams(events_df):
     events_df = events_df.merge(matches_df, on='match_id', how='left')
     print(events_df.columns)
     events_df['venue'] = np.where(
-        events_df['team_name'] == events_df['home_team'],
+        events_df['team'] == events_df['home_team'],
         'home',
         'away'
     )
