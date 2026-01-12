@@ -16,18 +16,13 @@ def calculate_period_time(period, event_time):
 def calculate_player_on_pitch(events_df):
     start_time = time.time()
 
-    lineup_cache = {}
-
-    for match_id in events_df['match_id'].unique():
-        lineup_cache[match_id] = sb.lineups(match_id)
-
     for index, event in events_df.iterrows():
         #Get event's timestamp, and convert it in hh:mm:ss
         event_time = pd.to_timedelta(event['timestamp'])
         event_time = calculate_period_time(event['period'], event_time)
 
         #Lineups containt info about player (when they entered the pitch)
-        lineup = lineup_cache[event['match_id']]
+        lineup = sb.lineups(event['match_id'])
         team = event['team']
         lineup = lineup[team]
 
